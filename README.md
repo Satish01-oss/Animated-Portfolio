@@ -2,7 +2,7 @@
 
 A cinematic, scroll-driven personal portfolio built with **HTML**, **CSS**, and **JavaScript**. Inspired by premium interactive websites, the portfolio combines smooth scrolling, canvas image-sequence animation, and modern UI design to create an immersive browsing experience.
 
-![Portfolio Preview](assets/images/powerlifter.jpg)
+![Portfolio Preview](assets/images/preview.jpg)
 
 ---
 
