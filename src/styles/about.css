@@ -1,0 +1,143 @@
+/* ============================================================
+   about.css — about statement, skills table, education
+   ============================================================ */
+
+.about {
+  position: relative;
+  z-index: 5;
+  background: var(--bg);
+  padding: clamp(6rem, 18vh, 12rem) var(--pad);
+  border-top: 1px solid var(--line);
+}
+
+.about__statement {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: clamp(1.6rem, 4.2vw, 3.4rem);
+  line-height: 1.24;
+  letter-spacing: -0.01em;
+  max-width: 24ch;
+}
+
+/* SplitType wraps each line; we mask it and slide the line up */
+.about__statement .line { overflow: hidden; }
+
+.about__meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 2rem;
+  margin-top: clamp(4rem, 10vh, 7rem);
+  padding-top: 2.5rem;
+  border-top: 1px solid var(--line);
+}
+.about__meta-item { display: flex; flex-direction: column; gap: 0.4rem; }
+.about__meta-key {
+  font-size: 0.68rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+.about__meta-val { font-size: 1rem; color: var(--ink); }
+
+/* ── Skills ───────────────────────────────────────────────── */
+
+.skills {
+  background: var(--bg);
+  padding: clamp(6rem, 18vh, 12rem) var(--pad);
+}
+
+.skills__list { margin-top: clamp(3rem, 8vh, 5rem); }
+
+.skills__row {
+  display: grid;
+  grid-template-columns: minmax(120px, 1fr) 3fr;
+  gap: 1.5rem;
+  align-items: baseline;
+  padding: 1.6rem 0;
+  border-top: 1px solid var(--line);
+  transition: padding-left 0.5s var(--ease);
+}
+.skills__row:last-child { border-bottom: 1px solid var(--line); }
+.skills__row:hover { padding-left: 1rem; }
+
+.skills__label {
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+.skills__values {
+  font-family: var(--font-serif);
+  font-size: clamp(1.1rem, 2.6vw, 1.9rem);
+  line-height: 1.35;
+}
+.skills__sep { color: var(--ink-faint); }
+
+/* Each tool name is its own hover target that summons its logo. */
+.skills__tool {
+  transition: color 0.3s var(--ease);
+}
+@media (hover: hover) {
+  .skills__tool { cursor: pointer; }
+  .skills__tool:hover { color: var(--accent); }
+}
+
+/* Cursor-following logo tile. Solid light background so black brand marks
+   (Express, GitHub) stay visible on the dark theme too. */
+.skills__preview {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 80;
+  width: 116px;
+  height: 116px;
+  padding: 22px;
+  border-radius: 18px;
+  background: #ffffff;
+  border: 1px solid rgba(10, 10, 10, 0.08);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.22);
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  visibility: hidden;
+  will-change: transform;
+}
+.skills__preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* ── Education ────────────────────────────────────────────── */
+
+.education {
+  background: var(--bg);
+  padding: clamp(6rem, 18vh, 12rem) var(--pad);
+}
+
+.edu {
+  display: grid;
+  grid-template-columns: minmax(160px, 1fr) 3fr;
+  gap: 2rem;
+  padding-top: 2.5rem;
+  border-top: 1px solid var(--line);
+}
+.edu__year {
+  font-size: 0.78rem;
+  letter-spacing: 0.12em;
+  color: var(--ink-soft);
+}
+.edu__year span { color: var(--ink-faint); }
+
+.edu__degree {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: clamp(1.6rem, 4vw, 3rem);
+  line-height: 1.1;
+  margin-bottom: 0.75rem;
+}
+.edu__place { color: var(--ink-soft); font-size: 0.95rem; }
+
+@media (max-width: 720px) {
+  .skills__row, .edu { grid-template-columns: 1fr; gap: 0.6rem; }
+}

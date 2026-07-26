@@ -1,6 +1,6 @@
 # 🎬 Animated Portfolio
 
-A cinematic, scroll-driven personal portfolio built with **HTML**, **CSS**, and **JavaScript**. Inspired by premium interactive websites, the portfolio combines smooth scrolling, canvas image-sequence animation, and modern UI design to create an immersive browsing experience.
+A cinematic, scroll-driven personal portfolio built with **React**, **Vite**, and modern **CSS**. Inspired by premium interactive websites, it combines smooth scrolling, a canvas image-sequence hero, and a minimalist UI for an immersive browsing experience.
 
 ![Portfolio Preview](assets/images/preview.jpg)
 
@@ -8,25 +8,24 @@ A cinematic, scroll-driven personal portfolio built with **HTML**, **CSS**, and 
 
 ## ✨ Features
 
-- 🎥 Scroll-controlled canvas animation
-- ⚡ Smooth scrolling experience
-- 🎨 Modern minimalist UI
-- 📱 Responsive design
-- 🖱️ Custom cursor interactions
-- ✨ GSAP-powered animations
-- 🚀 Optimized image sequence rendering
-- 💻 Clean and modular project structure
+- 🎥 Scroll-controlled canvas animation (300-frame hero sequence)
+- ⚡ Lenis smooth scrolling, synced with GSAP ScrollTrigger
+- 🎨 Modern minimalist UI with a system-aware light/dark theme
+- 📱 Responsive design — fewer hero frames on mobile for faster loads
+- 🖱️ Custom cursor + cursor-reactive parallax on the hero character
+- 🧩 Hover-to-preview official brand logos in the Skills section
+- 🚀 WebP image sequence (~71 MB → ~21 MB) and code-split motion libraries
+- ♿ Respects `prefers-reduced-motion` throughout
 
 ---
 
 ## 🛠️ Built With
 
-- HTML5
-- CSS3
-- JavaScript (ES6)
-- GSAP
-- ScrollTrigger
+- React 18 + Vite
+- JavaScript (ES6+)
+- GSAP + ScrollTrigger
 - Lenis Smooth Scroll
+- SplitType
 
 ---
 
@@ -35,27 +34,20 @@ A cinematic, scroll-driven personal portfolio built with **HTML**, **CSS**, and 
 ```
 Animated/
 │
-├── assets/
-│   ├── images/
-│   └── sequence/
+├── index.html              # Vite entry
+├── src/
+│   ├── main.jsx            # mounts <App>, imports styles
+│   ├── App.jsx             # orchestrates load → reveal → animate
+│   ├── components/         # Hero, About, Skills, Work, Education, Contact, …
+│   ├── hooks/              # useLenis, useImageSequence, useScrollAnimations, …
+│   ├── data/               # project cards
+│   ├── styles/             # global / hero / about / projects / contact
+│   └── assets/images/      # project screenshots (bundled)
 │
-├── css/
-│   ├── global.css
-│   ├── hero.css
-│   ├── about.css
-│   ├── projects.css
-│   └── contact.css
-│
-├── js/
-│   ├── main.js
-│   ├── scroll.js
-│   ├── animation.js
-│   ├── canvas.js
-│   └── cursor.js
-│
-├── legacy/
-│
-├── index.html
+├── public/assets/sequence/ # WebP hero frames (served at runtime)
+├── scripts/                # PNG → WebP conversion
+├── assets/                 # original PNG frames (source, not shipped)
+├── legacy/                 # previous static HTML/CSS/JS version
 └── Skill.md
 ```
 
@@ -67,15 +59,25 @@ Clone the repository:
 
 ```bash
 git clone https://github.com/Satish01-oss/Animated-Portfolio.git
-```
-
-Navigate to the project:
-
-```bash
 cd Animated-Portfolio
 ```
 
-Open `index.html` in your browser or use **Live Server** in VS Code.
+Install dependencies and run the dev server:
+
+```bash
+npm install
+npm run dev        # http://localhost:5173
+```
+
+Build for production:
+
+```bash
+npm run build      # output in dist/
+npm run preview    # serve the production build locally
+```
+
+> The hero frames ship as WebP in `public/assets/sequence/`. To regenerate them
+> from the PNG originals in `assets/sequence/`, run `npm run frames`.
 
 ---
 

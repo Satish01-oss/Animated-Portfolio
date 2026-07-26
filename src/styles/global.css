@@ -1,0 +1,273 @@
+/* ============================================================
+   global.css — reset, tokens, typography, nav, loader, footer
+   Palette: white primary, black secondary, neutral gray accent.
+   ============================================================ */
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg:        #f4f3f1;
+  --bg-raised: #ffffff;
+  --ink:       #0a0a0a;
+  --ink-soft:  #6f6f6f;
+  --ink-faint: #b4b2ae;
+  --line:      rgba(10, 10, 10, 0.12);
+  --accent:    #8f8b84;          /* the single accent: neutral gray */
+
+  --font-serif: "Instrument Serif", Georgia, serif;
+  --font-sans:  "Inter", system-ui, -apple-system, sans-serif;
+
+  --pad: clamp(1.25rem, 5vw, 5rem);
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-theme="dark"] {
+  --bg:        #0c0c0d;
+  --bg-raised: #151517;
+  --ink:       #f2f1ef;
+  --ink-soft:  #96948f;
+  --ink-faint: #4a4844;
+  --line:      rgba(242, 241, 239, 0.14);
+  --accent:    #8f8b84;
+}
+
+html { -webkit-text-size-adjust: 100%; }
+
+/* Hide the native scrollbar. The .progress rail below takes over as
+   the position affordance — scrolling itself is untouched, so wheel,
+   trackpad, touch, keyboard and Home/End all behave exactly as before. */
+html { scrollbar-width: none; -ms-overflow-style: none; }
+html::-webkit-scrollbar { width: 0; height: 0; display: none; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-weight: 300;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  /* `clip`, not `hidden`: hidden turns <body> into a scroll container,
+     which silently breaks position:sticky and confuses Lenis. */
+  overflow-x: clip;
+  transition: background-color 0.6s var(--ease), color 0.6s var(--ease);
+}
+
+/* Lenis owns the scroll; the page must not also scroll natively */
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+
+img, canvas { display: block; max-width: 100%; }
+a { color: inherit; text-decoration: none; }
+ul { list-style: none; }
+
+::selection { background: var(--ink); color: var(--bg); }
+
+/* Keyboard focus stays visible even though the cursor is custom */
+:focus-visible { outline: 2px solid var(--ink); outline-offset: 4px; }
+
+/* ── Shared section furniture ─────────────────────────────── */
+
+.section__index {
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: clamp(2rem, 6vw, 4rem);
+}
+
+.section__title {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: clamp(3rem, 11vw, 9rem);
+  line-height: 0.94;
+  letter-spacing: -0.02em;
+}
+.section__title em { font-style: italic; color: var(--accent); }
+
+/* Elements animated in by GSAP start hidden — but only when JS is running,
+   so a no-JS visitor still sees everything. The `.motion-safe` failsafe (set
+   by App if animations ever fail to initialise) forces them visible so
+   content can never be stranded at opacity 0. */
+.js [data-reveal] { opacity: 0; transform: translateY(28px); }
+.js.reveal-failsafe [data-reveal] { opacity: 1 !important; transform: none !important; }
+
+/* ── Loader ───────────────────────────────────────────────── */
+
+.loader {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: grid;
+  place-items: center;
+  background: var(--bg);
+}
+.loader.is-done { opacity: 0; pointer-events: none; transition: opacity 0.8s var(--ease); }
+
+.loader__inner { width: min(320px, 70vw); text-align: center; }
+.loader__name {
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
+  margin-bottom: 1.25rem;
+}
+.loader__bar { height: 1px; width: 100%; background: var(--line); overflow: hidden; }
+.loader__fill {
+  display: block;
+  height: 100%;
+  width: 0%;
+  background: var(--ink);
+  transition: width 0.25s linear;
+}
+.loader__count {
+  margin-top: 0.75rem;
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  color: var(--ink-faint);
+}
+
+/* ── Nav ──────────────────────────────────────────────────── */
+
+.nav {
+  position: fixed;
+  top: 0; left: 0;
+  z-index: 100;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.5rem var(--pad);
+  mix-blend-mode: difference;
+  color: #fff;                       /* difference blend flips this per backdrop */
+}
+
+.nav__brand { font-size: 0.85rem; letter-spacing: 0.22em; font-weight: 500; }
+.nav__brand em { font-style: normal; color: var(--accent); }
+
+.nav__links { display: flex; gap: clamp(1rem, 3vw, 2.5rem); }
+.nav__links a {
+  position: relative;
+  font-size: 0.78rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding-bottom: 2px;
+}
+.nav__links a::after {
+  content: "";
+  position: absolute;
+  left: 0; bottom: 0;
+  width: 100%; height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.45s var(--ease);
+}
+.nav__links a:hover::after { transform: scaleX(1); transform-origin: left; }
+
+.nav__theme {
+  width: 34px; height: 34px;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+.nav__theme-dot {
+  width: 11px; height: 11px;
+  border-radius: 50%;
+  background: currentColor;
+  transition: transform 0.4s var(--ease);
+}
+[data-theme="dark"] .nav__theme-dot { transform: scale(0.45); }
+
+/* ── Scroll progress rail ─────────────────────────────────── */
+
+.progress {
+  position: fixed;
+  right: clamp(0.9rem, 2.2vw, 2rem);
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 90;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  pointer-events: none;
+  /* difference keeps it legible over the pale page AND the character */
+  mix-blend-mode: difference;
+  color: #fff;
+  opacity: 0;
+  transition: opacity 0.6s var(--ease);
+}
+.progress.is-ready { opacity: 1; }
+
+/* Section name, set on its side alongside the rail */
+.progress__label,
+.progress__pct {
+  writing-mode: vertical-rl;
+  font-size: 0.62rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+}
+.progress__label {
+  transition: opacity 0.35s var(--ease);
+}
+.progress__label.is-swapping { opacity: 0; }
+
+.progress__rail {
+  position: relative;
+  display: block;
+  width: 1px;
+  height: clamp(90px, 18vh, 160px);
+  background: currentColor;
+  opacity: 0.28;
+}
+
+/* scaleY on a 1px bar is a composited transform — no layout per frame */
+.progress__fill {
+  position: absolute;
+  inset: 0;
+  background: currentColor;
+  transform: scaleY(0);
+  transform-origin: top;
+  will-change: transform;
+}
+
+@media (max-width: 720px) {
+  .progress__label { display: none; }
+  .progress__rail { height: 72px; }
+}
+
+/* ── Footer ───────────────────────────────────────────────── */
+
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: space-between;
+  align-items: center;
+  padding: 3rem var(--pad);
+  border-top: 1px solid var(--line);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  color: var(--ink-soft);
+}
+
+/* ── Responsive ───────────────────────────────────────────── */
+
+@media (max-width: 720px) {
+  .nav__links { display: none; }
+}
+
+/* ── Reduced motion: strip transforms, keep the content ───── */
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .js [data-reveal] { opacity: 1; transform: none; }
+}
