@@ -16,8 +16,11 @@ const framePath = (i) =>
  *  • WebP frames (~70% smaller than the PNG originals).
  *  • Coarse-pointer / narrow devices load every 2nd frame (stride 2),
  *    roughly halving the payload; gaps fall back to the nearest frame.
- *  • The first PRIORITY_COUNT frames resolve before the loader lifts;
- *    the rest stream in behind, capped at CONCURRENCY parallel requests.
+ *  • The opening PRIORITY_COUNT frames load first so the character can
+ *    paint early behind the loader, but preload() resolves only once EVERY
+ *    frame is decoded — the loader stays up until the whole sequence can be
+ *    scrubbed without hitting an unloaded frame. Requests are capped at
+ *    CONCURRENCY in flight.
  *  • Draws are dirty-flagged onto requestAnimationFrame, so many
  *    setFrame() calls in one frame collapse into a single drawImage.
  */
@@ -88,8 +91,9 @@ export function useImageSequence(canvasRef) {
   }), [markDirty]);
 
   /**
-   * Preload the priority wave (reporting progress), then hand back while
-   * the remaining frames continue loading in the background.
+   * Preload the whole sequence, reporting progress across every frame and
+   * resolving only when they are all decoded. Priority frames go first so
+   * the hero can paint early, but the loader stays up until the end.
    */
   const preload = useCallback((onProgress) => {
     // Fewer frames on constrained devices.
@@ -100,16 +104,16 @@ export function useImageSequence(canvasRef) {
 
     const indices = [];
     for (let i = 0; i < FRAME_COUNT; i += stride.current) indices.push(i);
-    const priority = indices.slice(0, PRIORITY_COUNT);
-    const rest = indices.slice(PRIORITY_COUNT);
+    const total = indices.length;
 
     let done = 0;
-    const runPool = (list, report) => {
+    const runPool = (list) => {
       let next = 0;
       const worker = async () => {
         while (next < list.length) {
           await loadFrame(list[next++]);
-          if (report) { done++; onProgress?.(done / priority.length); }
+          done++;
+          onProgress?.(done / total);   // progress spans the FULL sequence
         }
       };
       return Promise.all(
@@ -117,9 +121,10 @@ export function useImageSequence(canvasRef) {
       );
     };
 
-    return runPool(priority, true).then(() => {
-      runPool(rest, false);   // background; intentionally not awaited
-    });
+    // Opening frames first (early paint), then the rest — but await both.
+    const priority = indices.slice(0, PRIORITY_COUNT);
+    const rest = indices.slice(PRIORITY_COUNT);
+    return runPool(priority).then(() => runPool(rest));
   }, [loadFrame]);
 
   // Size the canvas up front and keep it sized (debounced).

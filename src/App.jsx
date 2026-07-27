@@ -44,7 +44,11 @@ export default function App() {
   useEffect(() => {
     if (started.current) return;
     started.current = true;
-    sequence.preload(setProgress).then(() => setReady(true));
+    // Lift the loader only once the ENTIRE hero sequence is decoded AND the
+    // web fonts are ready — so the visitor can never start scrolling into
+    // half-loaded frames or a font swap.
+    const fonts = document.fonts ? document.fonts.ready : Promise.resolve();
+    Promise.all([sequence.preload(setProgress), fonts]).then(() => setReady(true));
   }, [sequence]);
 
   // Fade the loader out, then unmount it after the CSS transition.
