@@ -22,17 +22,23 @@ export function useSkillsPreview(sectionRef, previewRef, imgRef) {
     if (!window.matchMedia("(hover: hover)").matches) return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
-    // Preload every logo so the first hover is instant.
-    const tools = [...section.querySelectorAll(".skills__tool")];
+    // Preload every logo so the first hover is instant — but only once the
+    // section is near. Fetched at mount, 22 third-party requests would
+    // compete with the hero's frames for the first screen's bandwidth.
     const cache = new Map();
-    tools.forEach((el) => {
-      const url = el.dataset.logo;
-      if (url && !cache.has(url)) {
-        const im = new Image();
-        im.src = url;
-        cache.set(url, im);
-      }
-    });
+    const warm = new IntersectionObserver(([entry]) => {
+      if (!entry.isIntersecting) return;
+      warm.disconnect();
+      section.querySelectorAll(".skills__tool").forEach((el) => {
+        const url = el.dataset.logo;
+        if (url && !cache.has(url)) {
+          const im = new Image();
+          im.src = url;
+          cache.set(url, im);
+        }
+      });
+    }, { rootMargin: "100% 0px" });
+    warm.observe(section);
 
     gsap.set(preview, { xPercent: -50, yPercent: -50, autoAlpha: 0, scale: 0.8 });
 
@@ -135,6 +141,7 @@ export function useSkillsPreview(sectionRef, previewRef, imgRef) {
       document.removeEventListener("mouseout", onDocLeave);
       document.removeEventListener("pointermove", onDocMove);
       io.disconnect();
+      warm.disconnect();
       gsap.killTweensOf(preview);
       // Killing the tweens can strand the tile mid-fade; put it back to
       // hidden so a re-mount never inherits a half-visible overlay.

@@ -5,11 +5,13 @@
 
 .hero {
   position: relative;
-  /* Scroll distance that scrubs the 300 frames. Kept deliberately short:
-     the hero is pinned and the scrollbar is hidden, so an over-long hero
-     reads as "stuck". ~350vh gives a clear sense of progress while still
-     playing the whole sequence. */
-  height: 350vh;
+  /* One pinned shot in three movements (useIntro holds the timeline):
+       ~300vh  the character sequence, captions swapping
+       ~200vh  he turns back to his opening pose as the shot closes into
+               the profile card; the Profile resolves beside it
+        100vh  Skills slides up over the stage (its negative margin)
+     plus the 100vh the stage itself occupies. */
+  height: 700vh;
   background: var(--bg);
 }
 
@@ -19,12 +21,84 @@
   height: 100vh;
   width: 100%;
   overflow: hidden;
+  transform-origin: 50% 100%;
 }
 
-/* The frames are ~72% transparent PNGs, so the canvas sits ABOVE the
-   marquee and the character's own silhouette masks the type. That is
-   what puts the text behind his head — no clip paths, no duplicated
-   layers, and it stays correct for all 300 frames as he moves. */
+/* The one element the profile card's photo acts on: useIntro clips it to a
+   5:7 window (the shape the Work cards use later), scales it and lands it on
+   the card. The paper, marquee and canvas inside travel together — so the
+   photo is the opening frame itself, in miniature. */
+.hero__media {
+  position: absolute;
+  inset: 0;
+  will-change: transform, clip-path;
+}
+
+/* The photo's own paper: the page colour, exactly as the opening frame has
+   it, so the full-bleed shot has no edge. It reaches a little ABOVE the
+   stage because the photo's window starts above the canvas — headroom over
+   the character's hair. */
+.hero__card {
+  position: absolute;
+  inset: -12% 0 0 0;
+  background: var(--bg);
+}
+
+/* ── The profile card ─────────────────────────────────────────
+   The paper the photo sits on. Invisible (full-bleed, transparent) through
+   the sequence; useIntro sizes it round the photo's on-screen rect as the
+   shot closes, so it grows a margin, a name plate and a shadow — a printed
+   profile card rather than a cut-out. */
+.hero__frame {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  background: var(--bg-raised);
+  border: 1px solid var(--line);
+  box-shadow:
+    0 60px 90px -50px rgba(10, 10, 10, 0.45),
+    0 18px 36px -24px rgba(10, 10, 10, 0.25);
+  pointer-events: none;
+}
+[data-theme="dark"] .hero__frame {
+  box-shadow: 0 60px 90px -40px rgba(0, 0, 0, 0.8);
+}
+
+/* The CV's header, printed under the photo: name and headline. */
+.hero__plate {
+  position: absolute;
+  left: var(--m, 14px);
+  right: var(--m, 14px);
+  bottom: 0;
+  height: var(--plate-h, 80px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.3rem;
+  opacity: 0;
+}
+.hero__plate-name {
+  font-size: clamp(1.05rem, 2.4vh, 1.45rem);
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+}
+.hero__plate-role {
+  font-family: var(--font-mono);
+  font-size: clamp(0.55rem, 1.1vh, 0.64rem);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+/* The frames are ~72% transparent, so the canvas sits ABOVE the marquee
+   and the character's own silhouette masks the type. That is what puts the
+   text behind his head — no clip paths, no duplicated layers, and it stays
+   correct for every frame as he moves. */
 .hero__canvas {
   position: absolute;
   inset: 0;
@@ -32,6 +106,34 @@
   height: 100%;
   z-index: 2;
   will-change: transform;   /* parallax tilt stays on the GPU */
+}
+
+/* Darkens the stage while Skills slides over it. */
+.hero__shade {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  background: #000;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Flow boxes for the pinned Profile (see Hero.jsx). The range starts where the
+   profile card begins to close, measured at mid-screen as the rail does. */
+.hero__range {
+  position: absolute;
+  left: 0;
+  top: 350vh;
+  bottom: 0;
+  width: 1px;
+  pointer-events: none;
+}
+.hero__anchor {
+  position: absolute;
+  top: 485vh;
+  left: 0;
+  width: 1px;
+  height: 1px;
 }
 
 /* ── Marquee band (behind the character) ──────────────────── */
@@ -46,16 +148,15 @@
   pointer-events: none;
 }
 .hero__marquee-track { display: flex; width: max-content; animation: marquee 28s linear infinite; }
-.hero__marquee-track h1 {
-  font-family: var(--font-serif);
-  font-weight: 400;
-  font-size: clamp(2.5rem, 6.5vw, 5.5rem);
+.hero__marquee-track p {
+  font-weight: 500;
+  font-size: clamp(2.4rem, 6.2vw, 5.25rem);
   line-height: 1;
+  letter-spacing: -0.045em;
   white-space: nowrap;
   padding-right: 0.4em;
   color: var(--ink);
 }
-.hero__marquee-track em { font-style: italic; color: var(--accent); }
 .hero__marquee-track span {
   color: transparent;
   -webkit-text-stroke: 1px var(--ink);
@@ -93,21 +194,20 @@
 }
 
 .hero__eyebrow {
+  font-family: var(--font-mono);
   font-size: 0.7rem;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--ink-faint);
   margin-bottom: 0.9rem;
 }
 
 .hero__title {
-  font-family: var(--font-serif);
-  font-weight: 400;
-  font-size: clamp(2.5rem, 7vw, 6rem);
-  line-height: 0.96;
-  letter-spacing: -0.02em;
+  font-weight: 500;
+  font-size: clamp(2.4rem, 6.4vw, 5.5rem);
+  line-height: 0.95;
+  letter-spacing: -0.05em;
 }
-.hero__title em { font-style: italic; color: var(--accent); }
 
 .hero__lede {
   margin-top: 1rem;
@@ -126,8 +226,9 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  font-family: var(--font-mono);
   font-size: 0.68rem;
-  letter-spacing: 0.24em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--ink-soft);
 }
@@ -148,14 +249,27 @@
 /* ── Responsive ───────────────────────────────────────────── */
 
 @media (max-width: 860px) {
-  .hero { height: 280vh; }
+  .hero { height: 520vh; }
+  .hero__range { top: 242vh; }
+  .hero__anchor { top: 310vh; }
+  .hero__frame { display: none; }
   .hero__captions { bottom: 6rem; max-width: 88vw; }
   .hero__scroll-hint { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  /* No pinned scrubbing: collapse to a single readable screen */
-  .hero { height: 100vh; }
+  /* No pinned scrubbing: the character is one readable screen and the Profile
+     simply follows it in the flow. */
+  .hero { height: auto; }
+  .hero__sticky { position: relative; height: auto; overflow: visible; }
+  .hero__media { position: relative; height: 100vh; overflow: hidden; }
+  .hero__range { top: 100vh; }
+  .hero__anchor { top: 100vh; }
+  .hero__shade { display: none; }
+  .hero__frame { display: none; }
+  /* The stage is no longer one screen tall, so anchor these to the media. */
+  .hero__captions { top: 55vh; bottom: auto; }
+  .hero__scroll-hint { display: none; }
   .hero__marquee-track { animation: none; }
   .hero__scroll-line { animation: none; }
   .hero__caption { transition: none; }

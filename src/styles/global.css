@@ -1,34 +1,55 @@
 /* ============================================================
-   global.css — reset, tokens, typography, nav, loader, footer
+   global.css — reset, tokens, type, nav, rail, footer
    Palette: white primary, black secondary, neutral gray accent.
    ============================================================ */
 
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
 :root {
-  --bg:        #f4f3f1;
+  --paper:     #f4f3f1;          /* the page, lights up */
+  --bg:        var(--paper);
   --bg-raised: #ffffff;
   --ink:       #0a0a0a;
   --ink-soft:  #6f6f6f;
-  --ink-faint: #b4b2ae;
+  --ink-faint: #a9a7a2;
   --line:      rgba(10, 10, 10, 0.12);
   --accent:    #8f8b84;          /* the single accent: neutral gray */
 
-  --font-serif: "Instrument Serif", Georgia, serif;
-  --font-sans:  "Inter", system-ui, -apple-system, sans-serif;
+  /* Type — three voices, each with one job (fonts declared in index.html):
+       Geist             everything read, from 9rem titles to body copy
+       Geist Mono        labels, numbers, tags: the CV's small print
+       Instrument Serif  italic accent words inside headings only */
+  --font-sans:   "Geist", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono:   "Geist Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --font-accent: "Instrument Serif", Georgia, serif;
 
   --pad: clamp(1.25rem, 5vw, 5rem);
   --ease: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 [data-theme="dark"] {
-  --bg:        #0c0c0d;
+  --paper:     #0c0c0d;
   --bg-raised: #151517;
   --ink:       #f2f1ef;
   --ink-soft:  #96948f;
-  --ink-faint: #4a4844;
+  --ink-faint: #5a5853;
   --line:      rgba(242, 241, 239, 0.14);
   --accent:    #8f8b84;
+}
+
+/* ── The lights ───────────────────────────────────────────────
+   One number, --dim (0–1), scrubbed by scroll on <html>, takes the whole
+   page down to near-black for the Work chapter and back up after it. Every
+   section paints var(--bg), so the dark arrives as a fade across the page —
+   not as a hard-edged band that starts at one section's border.
+   Ink is deliberately NOT mixed: text on the way into the dark sinks into it,
+   and the Work section carries its own light ink. */
+@supports (color: color-mix(in srgb, red, blue)) {
+  :root {
+    --dim: 0;
+    --night: #070708;
+    --bg: color-mix(in srgb, var(--paper), var(--night) calc(var(--dim) * 100%));
+  }
 }
 
 html { -webkit-text-size-adjust: 100%; }
@@ -43,9 +64,11 @@ body {
   background: var(--bg);
   color: var(--ink);
   font-family: var(--font-sans);
-  font-weight: 300;
+  font-weight: 400;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
   /* `clip`, not `hidden`: hidden turns <body> into a scroll container,
      which silently breaks position:sticky and confuses Lenis. */
   overflow-x: clip;
@@ -58,35 +81,74 @@ html.lenis, html.lenis body { height: auto; }
 
 img, canvas { display: block; max-width: 100%; }
 a { color: inherit; text-decoration: none; }
-ul { list-style: none; }
+ul, ol { list-style: none; }
 
 ::selection { background: var(--ink); color: var(--bg); }
+
+/* Read by assistive tech, not shown. */
+.visually-hidden {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  margin: -1px; padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
 
 /* Keyboard focus stays visible even though the cursor is custom */
 :focus-visible { outline: 2px solid var(--ink); outline-offset: 4px; }
 
-/* ── Shared section furniture ─────────────────────────────── */
-
-.section__index {
-  font-size: 0.72rem;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--ink-faint);
-  margin-bottom: clamp(2rem, 6vw, 4rem);
-}
+/* ── Type ─────────────────────────────────────────────────────
+   Large Geist wants to be set tight; the accent serif is dropped into it
+   for the one or two words a heading leans on. */
 
 .section__title {
-  font-family: var(--font-serif);
-  font-weight: 400;
+  font-family: var(--font-sans);
+  font-weight: 500;
   font-size: clamp(3rem, 11vw, 9rem);
-  line-height: 0.94;
-  letter-spacing: -0.02em;
+  line-height: 0.92;
+  letter-spacing: -0.055em;
 }
-.section__title em { font-style: italic; color: var(--accent); }
+
+/* Accent words in any heading: the serif italic, a touch larger to sit on
+   the same x-height as the sans around it. */
+.section__title em,
+.hero__title em,
+.hero__marquee-track em {
+  font-family: var(--font-accent);
+  font-style: italic;
+  font-weight: 400;
+  font-size: 1.08em;
+  letter-spacing: -0.01em;
+  color: var(--accent);
+}
+
+/* The CV's small print — section numbers here; eyebrows, keys and tags
+   follow the same recipe in their own sections. */
+.section__index {
+  margin-bottom: clamp(2rem, 6vw, 4rem);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+/* A hairline that draws itself in on arrival ([data-draw], see
+   useScrollAnimations) — the same 1px line the progress rail is made of.
+   Drawn in full when motion is reduced or JS never runs. */
+.rule {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: var(--line);
+  transform-origin: left;
+}
 
 /* Elements animated in by GSAP start hidden — but only when JS is running,
-   so a no-JS visitor still sees everything. The `.motion-safe` failsafe (set
-   by App if animations ever fail to initialise) forces them visible so
+   so a no-JS visitor still sees everything. `.reveal-failsafe` (set by
+   useScrollAnimations if its setup ever throws) forces them visible, so
    content can never be stranded at opacity 0. */
 .js [data-reveal] { opacity: 0; transform: translateY(28px); }
 .js.reveal-failsafe [data-reveal] { opacity: 1 !important; transform: none !important; }
@@ -94,39 +156,6 @@ ul { list-style: none; }
 /* Magnetic buttons are translated by JS (useScrollAnimations); keep them
    GPU-friendly. Used by the project links and the contact address. */
 .magnetic { display: inline-block; will-change: transform; }
-
-/* ── Loader ───────────────────────────────────────────────── */
-
-.loader {
-  position: fixed;
-  inset: 0;
-  z-index: 200;
-  display: grid;
-  place-items: center;
-  background: var(--bg);
-}
-.loader.is-done { opacity: 0; pointer-events: none; transition: opacity 0.8s var(--ease); }
-
-.loader__inner { width: min(320px, 70vw); text-align: center; }
-.loader__name {
-  font-family: var(--font-serif);
-  font-size: 1.5rem;
-  margin-bottom: 1.25rem;
-}
-.loader__bar { height: 1px; width: 100%; background: var(--line); overflow: hidden; }
-.loader__fill {
-  display: block;
-  height: 100%;
-  width: 0%;
-  background: var(--ink);
-  transition: width 0.25s linear;
-}
-.loader__count {
-  margin-top: 0.75rem;
-  font-size: 0.7rem;
-  letter-spacing: 0.2em;
-  color: var(--ink-faint);
-}
 
 /* ── Nav ──────────────────────────────────────────────────── */
 
@@ -142,16 +171,17 @@ ul { list-style: none; }
   padding: 1.5rem var(--pad);
   mix-blend-mode: difference;
   color: #fff;                       /* difference blend flips this per backdrop */
+  font-family: var(--font-mono);
 }
 
-.nav__brand { font-size: 0.85rem; letter-spacing: 0.22em; font-weight: 500; }
+.nav__brand { font-size: 0.82rem; font-weight: 600; letter-spacing: 0.12em; }
 .nav__brand em { font-style: normal; color: var(--accent); }
 
-.nav__links { display: flex; gap: clamp(1rem, 3vw, 2.5rem); }
+.nav__links { display: flex; gap: clamp(1rem, 2.6vw, 2.25rem); }
 .nav__links a {
   position: relative;
-  font-size: 0.78rem;
-  letter-spacing: 0.1em;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   padding-bottom: 2px;
 }
@@ -210,8 +240,9 @@ ul { list-style: none; }
 .progress__label,
 .progress__pct {
   writing-mode: vertical-rl;
+  font-family: var(--font-mono);
   font-size: 0.62rem;
-  letter-spacing: 0.24em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   font-variant-numeric: tabular-nums;
 }
@@ -254,8 +285,9 @@ ul { list-style: none; }
   align-items: center;
   padding: 3rem var(--pad);
   border-top: 1px solid var(--line);
-  font-size: 0.75rem;
-  letter-spacing: 0.08em;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
   color: var(--ink-soft);
 }
 

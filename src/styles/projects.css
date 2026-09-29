@@ -1,0 +1,162 @@
+/* ============================================================
+   projects.css — 04 Projects: the rest of the CV, as CV entries
+   ============================================================ */
+
+.projects {
+  position: relative;
+  background: var(--bg);
+  padding: clamp(6rem, 18vh, 12rem) var(--pad);
+}
+
+.projects__lede {
+  margin-top: clamp(1.5rem, 4vh, 2.5rem);
+  max-width: 52ch;
+  font-size: clamp(0.95rem, 1.3vw, 1.1rem);
+  line-height: 1.6;
+  color: var(--ink-soft);
+}
+
+.projects__list { margin-top: clamp(3rem, 8vh, 5rem); }
+
+/* One entry: the name on the left, the CV's detail on the right — the same
+   two-column rhythm as the Skills table above. */
+.project {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr);
+  gap: clamp(1.25rem, 4vw, 4rem);
+  padding: clamp(2rem, 5vh, 3rem) 0;
+  transition: padding-left 0.5s var(--ease);
+}
+.project:last-child { border-bottom: 1px solid var(--line); }
+@media (hover: hover) {
+  .project:hover { padding-left: 1rem; }
+}
+
+.project__no {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  color: var(--ink-faint);
+  margin-bottom: 0.7rem;
+}
+.project__name {
+  font-weight: 500;
+  font-size: clamp(1.9rem, 3.8vw, 3.2rem);
+  line-height: 0.98;
+  letter-spacing: -0.05em;
+}
+.project__kind {
+  margin-top: 0.8rem;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+/* ── Status: builds still under way ─────────────────────────── */
+.project__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1.1rem;
+}
+.project__status,
+.project__private {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.7rem 0.35rem 0.6rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.project__private { padding-left: 0.7rem; }
+
+/* A slow pulse: the one moving thing in an otherwise still list, and it
+   only appears on work that is actually still moving. */
+.project__pulse {
+  position: relative;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ink);
+}
+.project__pulse::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--ink);
+  animation: projectPulse 2.4s var(--ease) infinite;
+}
+@keyframes projectPulse {
+  0%   { transform: scale(1);   opacity: 0.5; }
+  70%  { transform: scale(3.2); opacity: 0; }
+  100% { transform: scale(3.2); opacity: 0; }
+}
+
+/* ── Private: the entry is there, its details are not ───────── */
+.project__redacted {
+  display: grid;
+  gap: 0.7rem;
+  margin-top: 1.5rem;
+  max-width: 56ch;
+}
+.project__redacted span {
+  display: block;
+  height: 0.8rem;
+  border-radius: 3px;
+  background: var(--ink);
+  opacity: 0.1;
+}
+.project__redacted span:nth-child(1) { width: 78%; }
+.project__redacted span:nth-child(2) { width: 62%; }
+.project__redacted span:nth-child(3) { width: 70%; }
+
+.project__summary {
+  font-size: clamp(1.1rem, 1.6vw, 1.35rem);
+  line-height: 1.35;
+  letter-spacing: -0.025em;
+  max-width: 36ch;
+}
+
+.project__points {
+  display: grid;
+  gap: 0.45rem;
+  margin-top: 1.4rem;
+  max-width: 56ch;
+}
+.project__points li {
+  position: relative;
+  padding-left: 1.25rem;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+.project__points li::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 0.72em;
+  width: 0.6rem; height: 1px;
+  background: currentColor;
+  opacity: 0.7;
+}
+
+.project__stack {
+  margin-top: 1.4rem;
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+@media (max-width: 720px) {
+  .project { grid-template-columns: 1fr; gap: 1rem; }
+}

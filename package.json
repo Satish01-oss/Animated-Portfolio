@@ -7,10 +7,10 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "frames": "node scripts/convert-frames.mjs"
+    "frames": "node scripts/convert-frames.mjs",
+    "strip": "node scripts/build-work-strip.mjs"
   },
   "dependencies": {
-    "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.4.2",
     "@react-three/postprocessing": "^3.0.4",
     "gsap": "^3.13.0",

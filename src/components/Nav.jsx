@@ -4,10 +4,11 @@ export default function Nav({ theme, onToggleTheme }) {
     <header className="nav" id="nav">
       <a className="nav__brand" href="#hero" data-cursor="Top">SATISH<em>*</em></a>
       <nav className="nav__links" aria-label="Primary">
-        <a href="#about">About</a>
+        <a href="#profile">Profile</a>
         <a href="#skills">Skills</a>
-        <a href="#showreel">Showreel</a>
         <a href="#work">Work</a>
+        <a href="#projects">Projects</a>
+        <a href="#education">Education</a>
         <a href="#contact">Contact</a>
       </nav>
       <button

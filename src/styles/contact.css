@@ -3,17 +3,59 @@
    ============================================================ */
 
 .contact {
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
   background: var(--bg);
   padding: clamp(7rem, 22vh, 14rem) var(--pad) clamp(5rem, 12vh, 8rem);
   border-top: 1px solid var(--line);
 }
 
+/* The closing shot: the hero character, repainted from the frames already
+   in memory (useBookend), rising from the bottom edge on the right exactly
+   as he stands in the opening. */
+.contact__figure {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+  width: min(58vw, 150vh);
+  height: 100%;
+  pointer-events: none;
+}
+.contact__canvas { width: 100%; height: 100%; }
+
+/* The body is a positioning context only; the title is lifted UNDER the
+   figure and everything clickable over it. */
+.contact__body { position: static; }
+.contact__body > * { position: relative; z-index: 2; }
+.contact__body > .contact__title { z-index: 0; }
+
 .contact__title {
-  font-family: var(--font-serif);
-  font-weight: 400;
-  font-size: clamp(3.2rem, 14vw, 12rem);
+  font-weight: 500;
+  font-size: clamp(3rem, 12.5vw, 10.5rem);
   line-height: 0.9;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.06em;
+  white-space: nowrap;
+}
+
+@media (max-width: 860px) {
+  /* No room beside the text: he stands UNDER it instead, in the flow, on the
+     section's bottom edge — so he can never sit behind the links. */
+  .contact {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    padding-bottom: 0;
+  }
+  .contact__figure {
+    order: 2;
+    position: relative;
+    width: 100%;
+    height: min(56svh, 120vw);
+    margin-top: 2.5rem;
+  }
+  .contact__title { white-space: normal; }
 }
 
 /* Icons inherit type colour and scale with the text they sit beside. */
@@ -24,11 +66,29 @@
   flex: 0 0 auto;
 }
 
+/* The CV's career objective — the last thing the page says about him. */
+.contact__lede {
+  margin-top: clamp(1.75rem, 5vh, 3rem);
+  max-width: 38ch;
+  font-size: clamp(0.95rem, 1.25vw, 1.08rem);
+  line-height: 1.6;
+  color: var(--ink-soft);
+}
+.contact__lede-key {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
 .contact__mail {
   display: inline-block;
-  margin-top: clamp(2rem, 6vh, 3.5rem);
-  font-family: var(--font-serif);
-  font-size: clamp(1.1rem, 3.4vw, 2.4rem);
+  margin-top: clamp(1.75rem, 5vh, 3rem);
+  font-size: clamp(1.05rem, 3vw, 2.1rem);
+  letter-spacing: -0.03em;
   color: var(--accent);
   border-bottom: 1px solid currentColor;
   padding-bottom: 0.15em;
@@ -114,8 +174,9 @@
               background-color 0.35s var(--ease);
 }
 .cursor__label {
+  font-family: var(--font-mono);
   font-size: 0.6rem;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   color: #000;
   opacity: 0;

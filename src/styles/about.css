@@ -1,85 +1,218 @@
 /* ============================================================
-   about.css — about statement, skills table, education
+   about.css — the Profile, the Skills table, Education
    ============================================================ */
 
+/* The Profile is the second half of the hero's pinned shot (see Hero.jsx): a
+   layer inside .hero__sticky, filling the space to the LEFT of the profile
+   card. --card-w is the card's on-screen width; useIntro writes the exact
+   figure it builds the card with, and this fallback matches its maths. */
 .about {
-  position: relative;
-  z-index: 5;
-  background: var(--bg);
-  padding: clamp(6rem, 18vh, 12rem) var(--pad);
-  border-top: 1px solid var(--line);
+  --card-w: calc(62vh * 5 / 7 + 2 * clamp(10px, 1.4vh, 16px));
+  position: absolute;
+  z-index: 4;
+  top: 50%;
+  left: var(--pad);
+  width: calc(100vw - var(--pad) * 2 - var(--card-w) - clamp(2.5rem, 6vw, 6rem));
+  transform: translateY(-50%);
+  pointer-events: none;           /* the hover parallax lives underneath */
 }
+/* Hidden until useIntro reveals it; a no-JS visitor never gets .js. */
+.js .about,
+.js .about .section__index,
+.js .about__meta-item { opacity: 0; }
+.js.reveal-failsafe .about,
+.js.reveal-failsafe .about .section__index,
+.js.reveal-failsafe .about__meta-item { opacity: 1; }
+.js.reveal-failsafe .about__statement .word { opacity: 1 !important; }
+
+.about .section__index { margin-bottom: clamp(1.5rem, 4vh, 2.5rem); }
 
 .about__statement {
-  font-family: var(--font-serif);
-  font-weight: 400;
-  font-size: clamp(1.6rem, 4.2vw, 3.4rem);
-  line-height: 1.24;
-  letter-spacing: -0.01em;
-  max-width: 24ch;
+  font-weight: 450;
+  /* Capped by height as well as width: the statement shares one pinned
+     screen with the facts, so a short window must shrink it. */
+  font-size: clamp(1.3rem, min(2.2vw, 3.9vh), 2.3rem);
+  line-height: 1.2;
+  letter-spacing: -0.03em;
+  max-width: 30ch;
 }
 
-/* SplitType wraps each line; we mask it and slide the line up */
-.about__statement .line { overflow: hidden; }
+/* Each word resolves from faint to full ink as it is scrolled past; useIntro
+   writes the opacity. Opacity rather than colour: it composites, and on a
+   flat page the two read identically. */
+.about__statement .word { opacity: 0.14; }
 
+/* The CV's personal details, as a definition list. */
 .about__meta {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 2rem;
-  margin-top: clamp(4rem, 10vh, 7rem);
-  padding-top: 2.5rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(0.9rem, 2.2vh, 1.4rem) 1.75rem;
+  margin-top: clamp(1.6rem, 5vh, 3rem);
+  padding-top: clamp(1rem, 2.4vh, 1.6rem);
   border-top: 1px solid var(--line);
+  max-width: 40rem;
 }
-.about__meta-item { display: flex; flex-direction: column; gap: 0.4rem; }
+.about__meta-item { display: flex; flex-direction: column; gap: 0.35rem; }
 .about__meta-key {
-  font-size: 0.68rem;
-  letter-spacing: 0.18em;
+  font-family: var(--font-mono);
+  font-size: 0.64rem;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--ink-faint);
 }
-.about__meta-val { font-size: 1rem; color: var(--ink); }
+.about__meta-val { font-size: 0.95rem; line-height: 1.35; color: var(--ink); }
+
+/* Narrow: no room for a portrait beside the text, so the character dims
+   behind it instead and the statement takes the full width. */
+@media (max-width: 860px) {
+  .about {
+    width: auto;
+    right: var(--pad);
+  }
+  .about__statement { font-size: clamp(1.2rem, min(5vw, 3.4vh), 2rem); }
+  .about__meta { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* Reduced motion: an ordinary section after the character's screen. */
+@media (prefers-reduced-motion: reduce) {
+  .about {
+    position: relative;
+    top: auto;
+    left: auto;
+    width: auto;
+    transform: none;
+    padding: clamp(6rem, 18vh, 12rem) var(--pad);
+    border-top: 1px solid var(--line);
+    background: var(--bg);
+  }
+  .js .about,
+  .js .about .section__index,
+  .js .about__meta-item { opacity: 1; }
+  .about__statement .word { opacity: 1; }
+}
 
 /* ── Skills ───────────────────────────────────────────────── */
 
+/* Skills arrives as a sheet sliding up over the still-pinned opening shot:
+   the negative margin starts it one screen early, inside the hero's last
+   100vh, and useIntro sinks and darkens the stage underneath as it comes. */
 .skills {
+  position: relative;
+  z-index: 2;
+  margin-top: -100vh;
   background: var(--bg);
   padding: clamp(6rem, 18vh, 12rem) var(--pad);
+  border-radius: clamp(20px, 3vw, 36px) clamp(20px, 3vw, 36px) 0 0;
+  box-shadow: 0 -24px 60px rgba(0, 0, 0, 0.12);
+}
+@media (prefers-reduced-motion: reduce) {
+  .skills { margin-top: 0; border-radius: 0; box-shadow: none; }
 }
 
-.skills__list { margin-top: clamp(3rem, 8vh, 5rem); }
+/* Title left, one-line lede right, sharing a baseline. */
+.skills__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1.5rem 3rem;
+}
+.skills__lede {
+  max-width: 24ch;
+  padding-bottom: 0.6rem;
+  font-size: clamp(1.15rem, 1.8vw, 1.55rem);
+  line-height: 1.25;
+  letter-spacing: -0.025em;
+  color: var(--ink-soft);
+}
 
-.skills__row {
+/* The MERN mark: in the lede it is the key, in the table it tags the four. */
+.skills__dot {
+  display: inline-block;
+  width: 0.36em;
+  height: 0.36em;
+  margin: 0 0.1em 0 0.35em;
+  border-radius: 50%;
+  background: var(--ink);
+  vertical-align: 0.12em;
+}
+.skills__lede .skills__dot {
+  width: 0.28em;
+  height: 0.28em;
+  margin: 0 0.45em 0 0;
+  vertical-align: 0.2em;
+}
+
+/* ── The spec sheet ───────────────────────────────────────────
+   Five columns, hairlines between them. The lines are the grid's own GAP
+   showing the --line colour through, so they stay exact at every column
+   count — no border bookkeeping per breakpoint. */
+.skills__grid {
   display: grid;
-  grid-template-columns: minmax(120px, 1fr) 3fr;
-  gap: 1.5rem;
-  align-items: baseline;
-  padding: 1.6rem 0;
-  border-top: 1px solid var(--line);
-  transition: padding-left 0.5s var(--ease);
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 1px;
+  margin-top: clamp(3rem, 8vh, 5rem);
+  background: var(--line);
+  border-block: 1px solid var(--line);
 }
-.skills__row:last-child { border-bottom: 1px solid var(--line); }
-.skills__row:hover { padding-left: 1rem; }
+.skills__group {
+  padding: clamp(1.5rem, 3.5vh, 2.25rem) clamp(1rem, 1.8vw, 1.75rem) clamp(1.75rem, 4vh, 2.5rem);
+  background: var(--bg);
+}
+.skills__group:first-child { padding-left: 0; }
+.skills__group-body { transition: opacity 0.4s var(--ease); }
 
-.skills__label {
-  font-size: 0.72rem;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
+.skills__group-head { margin-bottom: clamp(1.1rem, 2.6vh, 1.6rem); }
+.skills__no {
+  display: block;
+  margin-bottom: 0.55rem;
+  font-family: var(--font-mono);
+  font-size: 0.64rem;
+  letter-spacing: 0.06em;
   color: var(--ink-faint);
 }
-.skills__values {
-  font-family: var(--font-serif);
-  font-size: clamp(1.1rem, 2.6vw, 1.9rem);
-  line-height: 1.35;
+.skills__name {
+  font-weight: 500;
+  font-size: clamp(1.2rem, 1.7vw, 1.55rem);
+  line-height: 1;
+  letter-spacing: -0.035em;
 }
-.skills__sep { color: var(--ink-faint); }
 
-/* Each tool name is its own hover target that summons its logo. */
-.skills__tool {
-  transition: color 0.3s var(--ease);
+.skills__items li {
+  padding: 0.38rem 0;
+  font-size: 0.95rem;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+  color: var(--ink);
 }
+
+/* Hover: the column you are reading stays lit, the rest step back — and a
+   tool with an official mark summons it (useSkillsPreview). */
 @media (hover: hover) {
-  .skills__tool { cursor: pointer; }
-  .skills__tool:hover { color: var(--accent); }
+  .skills__grid:hover .skills__group-body { opacity: 0.4; }
+  .skills__grid .skills__group:hover .skills__group-body { opacity: 1; }
+  .skills__tool {
+    cursor: pointer;
+    display: inline-block;
+    transition: transform 0.35s var(--ease), color 0.35s var(--ease);
+  }
+  .skills__tool:hover { transform: translateX(4px); color: var(--accent); }
+}
+
+/* Two columns, then one. The last group spans the row so no empty cell is
+   left showing the gap colour. */
+@media (max-width: 1100px) {
+  .skills__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .skills__group:nth-child(odd) { padding-left: 0; }
+  .skills__group:last-child { grid-column: 1 / -1; }
+}
+@media (max-width: 560px) {
+  .skills__lede { max-width: none; padding-bottom: 0; }
+  .skills__items li { font-size: 0.9rem; }
+}
+@media (max-width: 340px) {
+  .skills__grid { grid-template-columns: 1fr; }
+  .skills__group { padding-left: 0; padding-right: 0; }
 }
 
 /* Cursor-following logo tile. Solid light background so black brand marks
@@ -119,25 +252,51 @@
   display: grid;
   grid-template-columns: minmax(160px, 1fr) 3fr;
   gap: 2rem;
+  position: relative;
   padding-top: 2.5rem;
-  border-top: 1px solid var(--line);
 }
 .edu__year {
-  font-size: 0.78rem;
-  letter-spacing: 0.12em;
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  letter-spacing: 0.04em;
   color: var(--ink-soft);
 }
 .edu__year span { color: var(--ink-faint); }
 
 .edu__degree {
-  font-family: var(--font-serif);
-  font-weight: 400;
-  font-size: clamp(1.6rem, 4vw, 3rem);
-  line-height: 1.1;
+  font-weight: 500;
+  font-size: clamp(1.5rem, 3.6vw, 2.75rem);
+  line-height: 1.08;
+  letter-spacing: -0.04em;
   margin-bottom: 0.75rem;
 }
 .edu__place { color: var(--ink-soft); font-size: 0.95rem; }
 
+/* The CV's "relevant areas": the modules, set like the Skills values. */
+.edu__areas-key {
+  margin-top: 2rem;
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+.edu__areas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem 0;
+  margin-top: 0.6rem;
+  max-width: 44rem;
+  font-size: clamp(1rem, 1.7vw, 1.3rem);
+  line-height: 1.4;
+  letter-spacing: -0.02em;
+}
+.edu__areas li:not(:last-child)::after {
+  content: "·";
+  margin: 0 0.45em;
+  color: var(--ink-faint);
+}
+
 @media (max-width: 720px) {
-  .skills__row, .edu { grid-template-columns: 1fr; gap: 0.6rem; }
+  .edu { grid-template-columns: 1fr; gap: 0.6rem; }
 }

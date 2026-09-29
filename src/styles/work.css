@@ -1,0 +1,381 @@
+/* ============================================================
+   work.css — 03 Work: the ring that unrolls into three cards
+   Base rules are the static layout (narrow screens, reduced
+   motion); the pinned choreography is layered on in the media
+   query at the bottom, the same breakpoint useWork uses.
+   ============================================================ */
+
+/* The lights are down for this chapter (see --dim in global.css), so the
+   section carries light ink regardless of theme. Its background stays the
+   shared --bg, which is what lets the dark arrive as a fade rather than a
+   hard-edged band. */
+.work {
+  position: relative;
+  --ink:       #f4f3f1;
+  --ink-soft:  #9a9893;
+  --ink-faint: #67645f;
+  --line:      rgba(244, 243, 241, 0.14);
+  /* value ramp in neutrals — the palette's one accent is already spent */
+  --pillar-1-bg: #c9c7c3;
+  --pillar-1-ink: #0a0a0a;
+  --pillar-2-bg: #74716c;
+  --pillar-2-ink: #f4f3f1;
+  --pillar-3-bg: #1b1b1e;
+  --pillar-3-ink: #f4f3f1;
+  background: var(--bg);
+  color: var(--ink);
+  padding: clamp(6rem, 16vh, 10rem) var(--pad);
+}
+
+.work__stage { display: none; }
+
+/* Lines that only describe the pinned choreography. In the stacked layout
+   there is no reel to unroll and nothing is turned over — the cards simply
+   show their projects — so they would be instructions for nothing. */
+.work__cue,
+.pillars__header { display: none; }
+
+/* Sized in rem, not ch: `ch` here would be the small body text's, and the
+   title would break after every word. Half the stage — the ring has the
+   other half. */
+.work__copy { max-width: min(42rem, 88vw); }
+.work__copy .section__title { font-size: clamp(2.4rem, 5.2vw, 4.6rem); }
+.work__lede {
+  margin-top: 1.25rem;
+  font-size: clamp(0.9rem, 1.2vw, 1.05rem);
+  color: var(--ink-soft);
+  max-width: 38ch;
+}
+
+/* ── The deck ─────────────────────────────────────────────── */
+
+.pillars__stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3rem;
+  margin-top: clamp(4rem, 10vh, 6rem);
+}
+.pillars__header { width: 100%; text-align: center; }
+.pillars__heading {
+  font-weight: 500;
+  font-size: clamp(1.6rem, 4.4vw, 3.5rem);
+  line-height: 1;
+  letter-spacing: -0.05em;
+}
+
+.pillars__row {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+  width: 100%;
+}
+
+.pillar {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  border-radius: 20px;
+}
+
+.pillar__front,
+.pillar__back {
+  border-radius: inherit;
+  overflow: hidden;
+}
+
+/* ── Front: a slice of the strip the ring wears ───────────────
+   Each front paints the SAME image at 3× its own width and offsets to its
+   own third — the same trick the ring's shader uses, so the three fronts
+   side by side are pixel-for-pixel the strip it lands as. Grayscale to
+   match the ring once its colour has drained. */
+.pillar__front {
+  display: none;
+  background-size: 300% 100%;
+  background-repeat: no-repeat;
+  background-color: var(--bg-raised);
+  filter: grayscale(1);
+}
+/* Attached only once the section is near (Work.jsx): a CSS background
+   cannot be lazy-loaded natively. */
+.work.is-armed .pillar__front {
+  background-image: url("../assets/images/work-strip.webp");
+}
+#pillar-1 .pillar__front { background-position: 0% 50%; }
+#pillar-2 .pillar__front { background-position: 50% 50%; }
+#pillar-3 .pillar__front { background-position: 100% 50%; }
+
+/* Appears once the slab has split: which project each card is holding. */
+.pillar__label {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 3rem 1.1rem 1rem;
+  background: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.72));
+  color: #f4f3f1;
+  font-family: var(--font-mono);
+  font-size: 0.64rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0;
+  visibility: hidden;
+}
+
+/* ── Back: the project card ───────────────────────────────────
+   Screenshot on top, detail below, links pinned to the base so all three
+   line up regardless of how long the bullet list runs. */
+.pillar__back {
+  /* The query container for everything inside, so `cqw` below means "% of
+     the card's width" — the face stays self-similar at every card size. */
+  container-type: inline-size;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--line);
+  transition: transform 0.6s var(--ease), border-color 0.6s var(--ease);
+}
+
+.pillar__shot {
+  display: block;
+  position: relative;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.25);
+}
+/* The screenshot sits over-scaled and desaturated, then settles to 1:1 in
+   full colour on hover. Only transform and filter animate. */
+.pillar__shot img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  transform: scale(1.06);
+  filter: saturate(0.55) contrast(0.95);
+  transition: transform 1s var(--ease), filter 0.8s var(--ease);
+}
+.pillar__back:hover .pillar__shot img { transform: scale(1); filter: none; }
+.pillar__shot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 40%, currentColor 100%);
+  opacity: 0.35;
+  transition: opacity 0.8s var(--ease);
+  pointer-events: none;
+}
+.pillar__back:hover .pillar__shot::after { opacity: 0.1; }
+
+.pillar__info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: 5cqw 5cqw 5.5cqw;
+}
+.pillar__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.6rem;
+  margin-bottom: 3.5cqw;
+  font-family: var(--font-mono);
+  font-size: max(9px, 2.8cqw);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.pillar__no {
+  font-size: 6cqw;
+  line-height: 1;
+  opacity: 0.55;
+}
+.pillar__tag { opacity: 0.8; text-align: right; }
+.pillar__title {
+  font-weight: 500;
+  font-size: 5.4cqw;
+  line-height: 1.12;
+  letter-spacing: -0.035em;
+  margin-bottom: 4cqw;
+}
+.pillar__points { display: grid; gap: 2.5cqw; }
+.pillar__points li {
+  position: relative;
+  padding-left: 4.5cqw;
+  font-size: max(10px, 3.6cqw);
+  line-height: 1.45;
+  opacity: 0.85;
+}
+.pillar__points li::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 0.68em;
+  width: 2cqw; height: 1px;
+  background: currentColor;
+  opacity: 0.7;
+}
+.pillar__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 5cqw;
+  margin-top: auto;
+  padding-top: 4.5cqw;
+}
+.pillar__links a {
+  font-family: var(--font-mono);
+  font-size: max(10px, 3cqw);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding-bottom: 2px;
+  border-bottom: 1px solid currentColor;
+  opacity: 0.75;
+  transition: opacity 0.4s var(--ease);
+}
+.pillar__links a:hover { opacity: 1; }
+
+#pillar-1 .pillar__back { background: var(--pillar-1-bg); color: var(--pillar-1-ink); }
+#pillar-2 .pillar__back { background: var(--pillar-2-bg); color: var(--pillar-2-ink); }
+#pillar-3 .pillar__back { background: var(--pillar-3-bg); color: var(--pillar-3-ink); }
+
+/* ── Marquee behind the ring ─────────────────────────────────
+   The same device as the hero: outlined type running BEHIND the object,
+   so the chapter reads as a reprise of the opening rather than a new idea. */
+.work__marquee { display: none; }
+
+/* ═════════════════════════════════════════════════════════════
+   Desktop choreography — must match WORK_DESKTOP in useWork.js
+   ═════════════════════════════════════════════════════════════ */
+@media (min-width: 1000px) and (prefers-reduced-motion: no-preference) {
+  .work {
+    height: 850vh;
+    padding: 0;
+  }
+  .work__cue { display: inline; }
+  .pillars__header { display: block; }
+
+  .work__sticky {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    width: 100%;
+    overflow: hidden;
+  }
+
+  .work__stage {
+    display: block;
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+  }
+  /* <Canvas> renders a bare canvas child; size it from the stage. */
+  .work__stage canvas { width: 100% !important; height: 100% !important; }
+
+  .work__marquee {
+    display: block;
+    position: absolute;
+    top: 50%;
+    left: 0;
+    z-index: 0;
+    width: 100%;
+    overflow: hidden;
+    transform: translateY(-50%);
+    pointer-events: none;
+  }
+  .work__marquee-track {
+    display: flex;
+    width: max-content;
+    animation: workMarquee 36s linear infinite;
+  }
+  .work__marquee-track span {
+    font-weight: 500;
+    font-size: clamp(3rem, 8vw, 7rem);
+    letter-spacing: -0.045em;
+    line-height: 1;
+    white-space: nowrap;
+    padding-right: 0.5em;
+    color: transparent;
+    -webkit-text-stroke: 1px var(--ink-faint);
+  }
+  @keyframes workMarquee {
+    from { transform: translate3d(0, 0, 0); }
+    to   { transform: translate3d(-50%, 0, 0); }
+  }
+
+  .work__copy {
+    position: absolute;
+    left: var(--pad);
+    bottom: clamp(3.5rem, 11vh, 8rem);
+    z-index: 3;
+    pointer-events: none;
+  }
+  .work__copy .section__index { margin-bottom: 1.5rem; }
+
+  /* The deck fills the stage and is revealed by useWork at the hand-over. */
+  .pillars__stage {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    margin: 0;
+    justify-content: center;
+    gap: clamp(1.25rem, 4vh, 2.75rem);
+    padding: clamp(2rem, 7vh, 5rem) var(--pad) clamp(1.5rem, 5vh, 3.5rem);
+  }
+
+  /* Laid out at the FANNED size — the one the faces are read at. The joined
+     slab and the split are that layout scaled down by transforms, so the
+     text is rasterised 1:1 when it matters and nothing animates layout. */
+  .pillars__row {
+    flex-direction: row;
+    align-items: stretch;
+    gap: 36px;
+    width: 76%;
+    /* Card height follows card width (5:7), but the room to show it is the
+       viewport's height. Capping the row in vh keeps a wide, short screen
+       from growing cards taller than the stage. */
+    --pillar-max-h: 60vh;
+    max-width: calc(var(--pillar-max-h) * 3 * 5 / 7 + 72px);
+    perspective: 1400px;
+  }
+
+  .pillar {
+    flex: 1;
+    max-width: none;
+    aspect-ratio: 5 / 7;
+    transform-style: preserve-3d;
+    will-change: transform;
+  }
+
+  .pillar__front,
+  .pillar__back {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+  }
+  .pillar__front { display: block; }
+
+  /* The card is pre-rotated so that, once .pillar itself turns 180°, the
+     two cancel and the face reads the right way round. */
+  .pillar__back { transform: rotateY(180deg); }
+  .pillar__shot { aspect-ratio: auto; flex: 0 0 40%; }
+  .pillar__points { flex: 1; align-content: space-between; }
+
+  /* The face turned away must not swallow clicks meant for the other one. */
+  .pillar__back { pointer-events: none; }
+  .pillar.is-flipped .pillar__back { pointer-events: auto; }
+  .pillar.is-flipped .pillar__front { pointer-events: none; }
+
+  @media (hover: hover) {
+    .pillar.is-flipped .pillar__back:hover {
+      transform: rotateY(180deg) translateY(-10px);
+      border-color: currentColor;
+    }
+  }
+
+  /* Starting states, so nothing flashes before useWork's first update. */
+  .js .work__copy,
+  .js .pillars__stage,
+  .js .pillars__heading { opacity: 0; visibility: hidden; }
+  .js.reveal-failsafe .work__copy,
+  .js.reveal-failsafe .pillars__stage,
+  .js.reveal-failsafe .pillars__heading { opacity: 1; visibility: visible; }
+}

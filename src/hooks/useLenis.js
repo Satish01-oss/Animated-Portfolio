@@ -11,7 +11,7 @@ const prefersReducedMotion = () =>
 /**
  * Smooth scroll (Lenis) driven from GSAP's single ticker so both run on one
  * frame callback, plus the progress-rail wiring. `enabled` gates start-up:
- * App turns it on only after the loader lifts, so ScrollTrigger measures a
+ * App turns it on only once the page is handed over, so ScrollTrigger measures a
  * fully-laid-out, unlocked page. Reduced motion skips Lenis entirely but
  * still drives the rail from native scroll.
  *
@@ -115,7 +115,10 @@ export function useLenis(enabled, railRefs) {
         railRefs.pct.current.textContent = String(whole).padStart(2, "0");
       }
       const mid = y + window.innerHeight / 2;
-      const cur = sections.find((s) => mid >= s.top && mid < s.bottom);
+      // The LAST match, not the first: Profile is a range nested inside the
+      // hero, and the innermost section is the one the visitor is reading.
+      let cur = null;
+      for (const s of sections) if (mid >= s.top && mid < s.bottom) cur = s;
       if (cur) swapLabel(cur.name);
     };
 

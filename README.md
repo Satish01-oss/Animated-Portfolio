@@ -8,22 +8,47 @@ one site:
 - **3D Portfoil** — the WebGL pieces: a bloom-lit rotating cylinder and a pinned
   three-card flip sequence.
 
-Both are now sections of a single narrative, built to the rules in
-[`Skill.md`](Skill.md).
+Both are now one continuous story, built to the rules in [`Skill.md`](Skill.md).
 
 ---
 
 ## 🧭 The scroll story
 
-| # | Section | Where it came from | What it does |
-|---|---------|--------------------|--------------|
-| — | **Hero** | Animated | 300-frame WebP sequence scrubbed by scroll; captions swap as the character moves |
-| 01 | **About** | Animated | Split-line statement + meta grid |
-| 02 | **Skills** | Animated | Hover a tool name to summon its official logo on a cursor-following tile |
-| 03 | **Showreel** | **3D Portfoil** | Textured cylinder with a bloom pass; scroll turns it two full revolutions |
-| 04 | **Selected work** | **both** | One photograph splits into three cards, which flip to become the project cards — screenshot, detail and links, with the Animated project's hover reveal |
-| 05 | **Education** | Animated | — |
-| 06 | **Contact** | Animated | Split-char heading, magnetic mail link |
+The page is designed as **one shot**, not a stack of sections. Every seam is a
+hand-over — something from one chapter becomes the next — rather than a cut.
+And it reads **as the CV**: every word about Satish comes from
+`Satish_Kumar_CV.pdf`, kept in one module, [`src/data/cv.js`](src/data/cv.js).
+
+| # | Chapter | What happens | How it hands over |
+|---|---------|--------------|-------------------|
+| — | **Intro** | 150-frame WebP character sequence scrubbed by scroll; captions swap as he moves | The shot closes into a **profile card**, and the pose the page *opened* on develops into its photo |
+| 01 | **Profile** | The CV's profile resolves **word by word** beside the card; the CV's personal details underneath | **Skills slides up over it** like a sheet while the stage sinks and darkens |
+| 02 | **Skills** | Every CV skill in a five-column table, the MERN core marked; hover a column to read it, a tool for its logo | **The lights go down** — the whole page fades to near-black |
+| 03 | **Work** | A bloom-lit **ring of the three live projects**; the camera travels round it and the panel facing you resolves into colour | The ring stands up, **unrolls into a film strip** and lands exactly on three cards… |
+| | | …the cards **split**, then **turn over** to show each project | **The lights come back up** |
+| 04 | **Projects** | "Beyond the reel": the CV's other projects (04–07) as CV entries | — |
+| 05 | **Education** | BCA, RIIT / Kazi Nazrul University, and the CV's relevant areas | — |
+| 06 | **Contact** | "Let's build" and the CV's career objective; **the character returns** and turns to face you | The page ends where it began |
+
+**The profile card.** It keeps the *first impression* — the hero's opening
+frame, marquee still running behind his head — not the sequence's last frame.
+No frame near the end is close enough to the opening pose to cut or dissolve
+between them cleanly (the best pair still ghosts), so the photo empties as
+the card closes and the opening frame *develops* into it, over-exposed first
+and then settling, the way a print comes up. The card itself is paper that
+`useIntro` grows round the photo's on-screen rectangle: a margin, a shadow,
+and a name plate with the CV's headline.
+
+Three things run through the whole page and tie it together:
+
+- **The 5:7 frame.** The profile card's photo, every panel on the ring, and
+  the cards are the same shape — the ring's strip and the card fronts are
+  literally the same image (`work-strip.webp`).
+- **The lights.** One CSS number, `--dim`, scrubbed by scroll, takes the page
+  from paper to night and back, so there is never a hard-edged colour band.
+- **Type behind the subject.** The outlined marquee runs behind the character
+  in the hero, behind the ring in Work, and "Let's build" sits behind him at
+  the end.
 
 ---
 
@@ -33,7 +58,9 @@ Both are now sections of a single narrative, built to the rules in
 - GSAP + ScrollTrigger
 - Lenis smooth scroll
 - SplitType
-- Three.js via @react-three/fiber, drei and postprocessing
+- Three.js via @react-three/fiber and @react-three/postprocessing
+- Type: **Geist** (everything read), **Geist Mono** (labels, numbers, tags)
+  and **Instrument Serif** italic (accent words only) — self-hosted, OFL-1.1
 
 ---
 
@@ -42,27 +69,35 @@ Both are now sections of a single narrative, built to the rules in
 ```
 3D Animated Portfolio/
 │
-├── index.html                    # Vite entry, pre-paint theme resolution
+├── index.html                    # boot screen, preloads, @font-face, theme
+├── vercel.json                   # long-lived caching for assets and fonts
 ├── src/
 │   ├── main.jsx                  # mounts <App>, imports the stylesheets
-│   ├── App.jsx                   # orchestrates load → reveal → animate
+│   ├── App.jsx                   # orchestrates load → hand-over → animate
 │   ├── components/
-│   │   ├── Hero / About / Skills / Education / Contact / Footer
-│   │   ├── Showreel.jsx          # WebGL section shell + poster fallback
-│   │   ├── Pillars.jsx           # the work section: three-card flip deck
+│   │   ├── Hero.jsx              # the opening shot + profile card; Profile lives inside it
+│   │   ├── About / Skills / Education / Footer
+│   │   ├── Projects.jsx          # 04: the rest of the CV's projects
+│   │   ├── Work.jsx              # 03: ring stage + the card deck it lands on
+│   │   ├── Contact.jsx           # the closing shot (character returns)
 │   │   ├── three/Stage.jsx       # <Canvas> + bloom (lazy-loaded)
-│   │   └── three/Cylinder.jsx    # the rotating mesh
-│   ├── hooks/                    # useLenis, useImageSequence, useScrollAnimations,
-│   │                             # useShowreel, usePillars, useCursor, useTheme, …
-│   ├── data/                     # projects.js — one source for the work section
-│   ├── styles/                   # global / hero / about / showreel /
-│   │                             # pillars / contact
-│   └── assets/images/            # project screenshots (bundled + fingerprinted)
+│   │   └── three/Ring.jsx        # the ring: spin → unroll → land (shader)
+│   ├── hooks/
+│   │   ├── useIntro.js           # sequence → profile card → Profile → cover
+│   │   ├── useWork.js            # ring progress, hand-over, split + flip
+│   │   ├── useBookend.js         # repaints hero frames in Contact
+│   │   ├── useScrollAnimations.js# the lights, drawn rules, reveals, magnetics
+│   │   └── useLenis, useImageSequence, useCursor, useTheme, …
+│   ├── data/
+│   │   ├── cv.js                 # every word about Satish, from the CV
+│   │   └── projects.js           # the three ring projects (screenshots, links)
+│   ├── styles/                   # global / hero / about / work / projects / contact
+│   └── assets/images/            # screenshots + work-strip.webp (fingerprinted)
 │
-├── public/assets/sequence/       # 300 WebP hero frames
-├── public/assets/textures/       # showreel cylinder texture
-├── public/assets/pillars/        # the three card artworks
-├── scripts/convert-frames.mjs    # PNG → WebP
+├── public/assets/sequence/       # 150 WebP hero frames (~7.5 MB)
+├── public/fonts/                 # Geist, Geist Mono, Instrument Serif + licences
+├── scripts/convert-frames.mjs    # PNG renders → the WebP sequence
+├── scripts/build-work-strip.mjs  # screenshots → the ring / card-front strip
 └── Skill.md                      # the spec this site is built to
 ```
 
@@ -72,30 +107,59 @@ Both are now sections of a single narrative, built to the rules in
 
 ```bash
 npm install
-npm run dev        # http://localhost:5175 (any port works)
+npm run dev        # http://localhost:5173 (any port works)
 npm run build      # output in dist/
 npm run preview    # serve the production build
+
+npm run frames -- <folder-of-png-renders>   # rebuild the hero sequence
+npm run strip                               # rebuild the work strip
 ```
 
 ---
 
 ## ⚡ Load strategy
 
-The hero sequence is ~21 MB. Getting that off the critical path is most of the
-work here — measured at a throttled 10 Mbps, first paint went from waiting on
-**20.7 MB** to **2.97 MB**.
+The first screen needs exactly two things: the hero's **opening frame** and
+the **fonts**. Everything else streams in behind a page that already works.
 
-- **Frames load interlaced, not sequentially.** Pass 1 fetches every 12th frame
-  (25 images, <2 MB) and that alone spans the whole timeline, so the hero is
-  scrubbable end to end the moment the loader lifts. Passes at every 6th, 3rd
-  and finally every frame refine it in the background. Gaps fall back to the
-  nearest loaded frame, so an unrefined stretch is a lower frame rate, never a
-  hole.
-- **three.js (~950 kB) waits** until an IntersectionObserver says the Showreel
-  is two viewports away.
-- **The pillars panorama (~550 kB) waits** the same way. A CSS background
-  cannot be lazy-loaded natively, so the image is attached by an `.is-armed`
-  class rather than declared unconditionally.
+Measured on the production build over a throttled **5 Mbps** line:
+
+| | before | after |
+|---|---|---|
+| Something on screen | 0.61 s | 0.50 s |
+| Page ready to use | 4.73 s | **1.36 s** |
+| Downloaded before it is usable | 2.57 MB | **0.28 MB** |
+| Whole hero sequence | 22 MB | **7.5 MB** |
+
+- **A boot screen ships in the HTML.** The name and a moving line paint with
+  the first bytes, before any JavaScript arrives, and lift after 0.45 s as
+  soon as the page is ready. A 2.5 s cap means a slow asset can never hold
+  the page.
+- **Preloaded, not discovered.** `index.html` requests the opening frame and
+  the three fonts itself, so they download alongside the JS instead of after
+  it. The fonts are self-hosted (74 KB for all three) — no third-party
+  connection to open.
+- **The sequence is lighter.** 150 frames instead of 300 (still one per ~2vh
+  of scroll), re-encoded from the lossless renders at a setting that is
+  indistinguishable at 100% zoom: ~51 KB a frame, down from ~77 KB.
+- **Frames load interlaced, not sequentially.** After the opening frame, each
+  pass spans the whole timeline at a finer step (every 8th, 4th, 2nd, then
+  all), so the hero is scrubbable end to end early and only gets smoother.
+  Gaps fall back to the nearest loaded frame — a lower frame rate, never a
+  hole. Phones stop at 75 frames; Save-Data and 2G/3G connections at 38.
+- **Logos wait for their section.** The Skills hover marks come from two CDNs;
+  they are fetched when the section is a screen away, not at start-up.
+- **three.js (~950 kB) waits** until an IntersectionObserver says the Work
+  chapter is two viewports away.
+- **The work strip (~120 kB) waits** the same way. A CSS background cannot be
+  lazy-loaded natively, so the card fronts get it from an `.is-armed` class
+  rather than unconditionally. The ring imports the same fingerprinted file,
+  so one download serves both.
+- **The Contact bookend costs nothing.** It repaints frames the hero already
+  decoded into a second canvas — no extra requests.
+- **Nothing scroll-driven renders React.** Scroll writes into refs the ring
+  reads in `useFrame`; the render loop is parked (`frameloop="never"`) when the
+  chapter is off screen *and* once the ring has handed over to the DOM cards.
 
 Two bundling traps are worth knowing about, because both silently undo the
 deferral above and neither is visible without inspecting the built output:
@@ -127,10 +191,12 @@ Decisions worth knowing about, and why:
   design tokens.
 
 - **No mobile block.** *3D Portfoil* served a 404 screen below 1000px. `Skill.md`
-  requires responsiveness and graceful degradation, so instead: the Showreel falls
-  back to a static poster on narrow screens, under `prefers-reduced-motion`, and
-  where WebGL is unavailable; the Pillars stack into a plain list below 1000px.
-  React Router went with it — this is one page.
+  requires responsiveness and graceful degradation, so instead: below 1000px,
+  under `prefers-reduced-motion`, or without WebGL, the ring is skipped and the
+  cards stack into a plain list. On narrow screens the character dims behind the
+  About text instead of framing into a portrait, and in Contact he stands under
+  the links rather than beside them. React Router went with it — this is one
+  page.
 
 - **The neon palette was neutralised.** Cyan/pink/green accents and the red card
   back became the site's white / black / single-gray-accent palette.
@@ -148,44 +214,47 @@ Decisions worth knowing about, and why:
   animating as intended.
 
 - **Three.js is lazy and gated.** It is a separate chunk, imported only when the
-  Showreel decides the device should get WebGL, and the render loop is switched to
-  `frameloop="never"` by an IntersectionObserver whenever the section is off screen.
+  Work chapter decides the device should get WebGL, and the render loop is
+  switched to `frameloop="never"` whenever the canvas has nothing to show.
 
-- **Not carried over:** the 70 MB of original PNG frames (the shipped WebP set is
-  in `public/assets/sequence/`) and the `legacy/` static HTML version. To
-  regenerate frames, point `scripts/convert-frames.mjs` at a folder of PNG
-  originals.
+- **How the ring lands on the cards.** The ring's shader unrolls it by growing
+  the bend radius while arc length stays fixed, so the panels never stretch.
+  `useWork` measures the cards' joined rectangle (from `offset*`, which ignores
+  transforms), and `Ring.jsx` converts that from pixels to world units for the
+  fixed landing camera. The strip is placed on exactly that rectangle before
+  the canvas fades out and the DOM cards fade in. The cards are laid out at
+  their fanned, readable size; the joined slab is that layout scaled down, so
+  card text is rasterised 1:1 when it is read and no state animates layout.
+
+- **Two r3f traps, both silent.** `<shaderMaterial uniforms={…}>` hands the
+  material a *copy* of the uniforms, so per-frame writes never reach the GPU —
+  the ring builds its own `ShaderMaterial` instead. And the postprocessing
+  effects memoise on `JSON.stringify(props)`; in React 19 `ref` is a prop, so an
+  object ref on `<Bloom>` throws on the circular effect inside it. It uses a
+  callback ref, which stringify skips.
+
+- **Not carried over:** the 70 MB of original PNG renders (they remain in the
+  repo's git history under `assets/sequence/`) and the `legacy/` static HTML
+  version. To rebuild the WebP sequence, run `npm run frames -- <folder>` on
+  a folder of those PNGs.
 
 ---
 
 ## 🖼️ Image credits
 
-The Pillars front is a **single** photograph by
-[Benjamin Voros](https://unsplash.com/photos/mountain-under-starry-sky-phIFdC6lA4E)
-on [Unsplash](https://unsplash.com), desaturated and cropped to 15:7 (three 5:7
-cards side by side) via the Unsplash CDN. The
-[Unsplash License](https://unsplash.com/license) permits free commercial use
-without attribution; credited here anyway.
+All imagery on the ring and the cards is the portfolio's own work: the three
+project screenshots in `src/assets/images/`.
 
-It is sliced in CSS, not in the image: each card paints the same file at
-`background-size: 300% 100%` and offsets to its own third, so the slab reads as
-one continuous picture until the cards separate.
+`work-strip.webp` is those three screenshots cropped to 5:7 portraits and laid
+side by side (15:7 overall) by `scripts/build-work-strip.mjs`. The ring samples
+it as its texture — six panels, the three projects twice round — and each card
+front paints the same file at `background-size: 300% 100%`, offset to its own
+third. Because both read the same pixels, the moment the unrolled ring hands
+over to the real cards is the same picture in the same place.
 
-To swap it, replace `src/assets/images/pillars-panorama.jpg` with another **15:7**
-image — nothing else needs to change. A different aspect ratio will stretch the
-slices.
-
-The Showreel cylinder wears `public/assets/textures/showreel.webp`: six vivid
-photographs (also Unsplash) composited into one strip with **transparent
-gutters**, so the far wall of the open-ended cylinder shows through the gaps —
-that is what makes the bloom read as light coming from behind the object.
-
-Its aspect ratio is **6.283 : 1** — that is 2πr : h for a radius-1, height-1
-cylinder, which is what stops the panels stretching around the curve. Keep that
-ratio if you rebuild it. Sources are pushed to 1.28 saturation and held at 0.88
-brightness: saturation up so the bloom carries colour instead of washing to
-white, brightness back so only genuine highlights cross the 0.49 threshold and
-the panels stay readable behind the glow.
+To change what the ring shows, edit the crop offsets in the script and re-run
+`node scripts/build-work-strip.mjs`. Keep each panel 5:7; the ring's radius is
+derived from that ratio.
 
 Brand marks in the Contact section are inlined from
 [simple-icons](https://simpleicons.org) (CC0) in `src/components/Icon.jsx` —

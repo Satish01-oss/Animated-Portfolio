@@ -1,13 +1,24 @@
 import { useCallback, useEffect, useMemo, useRef } from "react";
 
-const FRAME_COUNT = 300;
-const CONCURRENCY = 8;
+const FRAME_COUNT = 150;
+const CONCURRENCY = 6;
 
-// Interlaced passes. Each pass walks the WHOLE timeline at a finer step, so
-// after pass 1 every scroll position already has a frame within 4 of it.
-// The loader waits for pass 1 only; the rest fill in behind the visitor.
-const PASSES_FULL = [12, 6, 3, 1];   // ends at all 300 frames
-const PASSES_LIGHT = [12, 6, 3];     // coarse pointers stop at 100
+// Interlaced passes. Each walks the WHOLE timeline at a finer step, so after
+// the first one every scroll position already has a frame within 4 of it.
+const PASSES = {
+  full:  [8, 4, 2, 1],   // desktop: all 150 frames, ~7.5 MB
+  light: [8, 4, 2],      // phones and coarse pointers: 75
+  saver: [8, 4],         // Save-Data on, or a 2G/3G connection: 38
+};
+
+function passesForThisDevice() {
+  const net = navigator.connection;
+  if (net && (net.saveData || /2g|3g/.test(net.effectiveType || ""))) return PASSES.saver;
+  const light =
+    window.matchMedia("(max-width: 860px)").matches ||
+    window.matchMedia("(pointer: coarse)").matches;
+  return light ? PASSES.light : PASSES.full;
+}
 
 const pad = (n) => String(n).padStart(4, "0");
 const framePath = (i) =>
@@ -18,21 +29,15 @@ const framePath = (i) =>
  * Knows nothing about scroll — the caller drives it with setFrame().
  *
  * Loadability:
- *  • WebP frames (~70% smaller than the PNG originals).
- *  • Loading is INTERLACED, not sequential. Pass 1 fetches every 12th frame —
- *    25 images, under 2 MB — and that alone spans the entire sequence, so the
- *    hero is scrubbable end to end the moment the loader lifts. Later passes
- *    (6th, 3rd, every) refine it in the background while the visitor is still
- *    reading the first screen.
- *
- *    The alternative, waiting for all 300, means holding a black screen for
- *    ~21 MB before anything can be seen — fine on localhost, close to twenty
- *    seconds on a real connection.
- *
- *    Gaps are covered by draw()'s nearest-loaded-frame fallback, so an
- *    unrefined stretch degrades to a lower frame rate rather than a hole.
- *  • Coarse-pointer / narrow devices stop at every 2nd frame, roughly
- *    halving the eventual payload.
+ *  • 150 frames at ~51 KB (scripts/convert-frames.mjs).
+ *  • The page waits for ONE frame: the opening pose, which index.html
+ *    already preloads. Everything else streams in behind the visitor.
+ *  • Loading is INTERLACED, not sequential: each pass spans the whole
+ *    timeline at a finer step, so the hero is scrubbable end to end early and
+ *    only gets smoother. Gaps fall back to the nearest loaded frame — an
+ *    unrefined stretch is a lower frame rate, never a hole.
+ *  • Phones stop at every 2nd frame; Save-Data and slow connections at
+ *    every 4th.
  *  • Requests are capped at CONCURRENCY in flight.
  *  • Draws are dirty-flagged onto requestAnimationFrame, so many
  *    setFrame() calls in one frame collapse into a single drawImage.
@@ -43,30 +48,43 @@ export function useImageSequence(canvasRef) {
   const lastDrawn = useRef(-1);
   const rafId = useRef(null);
 
-  const draw = useCallback(() => {
-    rafId.current = null;
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-
-    // Nearest loaded frame, so a not-yet-downloaded index degrades to a
-    // lower frame rate instead of flashing an empty canvas.
-    let img = images.current[current.current];
-    if (!img) {
-      for (let d = 1; d < FRAME_COUNT; d++) {
-        if (images.current[current.current - d]) { img = images.current[current.current - d]; break; }
-        if (images.current[current.current + d]) { img = images.current[current.current + d]; break; }
-      }
+  // Nearest loaded frame, so a not-yet-downloaded index degrades to a lower
+  // frame rate instead of flashing an empty canvas.
+  const nearest = useCallback((index) => {
+    const list = images.current;
+    if (list[index]) return list[index];
+    for (let d = 1; d < FRAME_COUNT; d++) {
+      if (list[index - d]) return list[index - d];
+      if (list[index + d]) return list[index + d];
     }
-    if (!img) return;
+    return null;
+  }, []);
 
+  // Cover-fit one frame into any canvas. Shared by the hero and by paint(),
+  // which lets another section (the Contact bookend) reuse the decoded
+  // frames without downloading a thing.
+  //
+  // Where cover-fit has to crop vertically (screens wider than the frames'
+  // 16:9) the crop is taken mostly from the BOTTOM: the character's hair
+  // stays in shot and the jacket gives way instead.
+  const ANCHOR_Y = 0.15;
+
+  const drawInto = useCallback((canvas, index) => {
+    const img = nearest(index);
+    if (!canvas || !img) return false;
+    const ctx = canvas.getContext("2d");
     const cw = canvas.width, ch = canvas.height;
     const ratio = Math.max(cw / img.width, ch / img.height);
     const dw = img.width * ratio, dh = img.height * ratio;
     ctx.clearRect(0, 0, cw, ch);
-    ctx.drawImage(img, (cw - dw) / 2, (ch - dh) / 2, dw, dh);
-    lastDrawn.current = current.current;
-  }, [canvasRef]);
+    ctx.drawImage(img, (cw - dw) / 2, (ch - dh) * ANCHOR_Y, dw, dh);
+    return true;
+  }, [nearest]);
+
+  const draw = useCallback(() => {
+    rafId.current = null;
+    if (drawInto(canvasRef.current, current.current)) lastDrawn.current = current.current;
+  }, [canvasRef, drawInto]);
 
   const markDirty = useCallback(() => {
     if (rafId.current === null) rafId.current = requestAnimationFrame(draw);
@@ -103,27 +121,15 @@ export function useImageSequence(canvasRef) {
   }), [markDirty]);
 
   /**
-   * Start the interlaced preload.
-   *
-   * Returns a promise that settles after the FIRST pass only — that is the
-   * moment the sequence can be scrubbed end to end, and therefore the moment
-   * the loader is allowed to lift. The finer passes are deliberately not
-   * awaited: they keep running afterwards and quietly raise the frame rate
-   * while the visitor is still on the first screen.
-   *
-   * `onProgress` reports across pass 1, so the bar reaching 100% coincides
-   * with the loader lifting rather than promising more than it delivers.
+   * Start loading. Returns a promise that settles when the OPENING frame is
+   * in and decoded — the only frame the first screen shows, and so the only
+   * one the page waits for. The passes after it are not awaited: they run
+   * in the background and quietly raise the frame rate.
    */
-  const preload = useCallback((onProgress) => {
-    // Fewer frames eventually on constrained devices.
-    const light =
-      window.matchMedia("(max-width: 860px)").matches ||
-      window.matchMedia("(pointer: coarse)").matches;
-    const passes = light ? PASSES_LIGHT : PASSES_FULL;
-
+  const preload = useCallback(() => {
     // Each index is claimed once, so a later pass only fetches what the
     // coarser passes did not already cover.
-    const claimed = new Set();
+    const claimed = new Set([0]);
     const passIndices = (step) => {
       const out = [];
       for (let i = 0; i < FRAME_COUNT; i += step) {
@@ -132,29 +138,23 @@ export function useImageSequence(canvasRef) {
       return out;
     };
 
-    const runPool = (list, onEach) => {
-      if (!list.length) return Promise.resolve();
+    const runPool = (list) => {
       let next = 0;
       const worker = async () => {
-        while (next < list.length) {
-          await loadFrame(list[next++]);
-          onEach?.();
-        }
+        while (next < list.length) await loadFrame(list[next++]);
       };
       return Promise.all(
         Array.from({ length: Math.min(CONCURRENCY, list.length) }, worker)
       );
     };
 
-    const first = passIndices(passes[0]);
-    let done = 0;
-    const gate = runPool(first, () => onProgress?.(++done / first.length));
+    // Decoded up front, so the first drawImage never stalls the hand-over.
+    const gate = loadFrame(0).then(() => images.current[0]?.decode?.().catch(() => {}));
 
-    // Refinement continues after the gate resolves — sequentially, so the
-    // coarse fill always completes before the network is spent on finer
-    // detail, and never in parallel with the gate itself.
+    // Passes run one after another, so the coarse fill always completes
+    // before the network is spent on finer detail.
     gate.then(async () => {
-      for (const step of passes.slice(1)) await runPool(passIndices(step));
+      for (const step of passesForThisDevice()) await runPool(passIndices(step));
     });
 
     return gate;
@@ -169,6 +169,16 @@ export function useImageSequence(canvasRef) {
     return () => { clearTimeout(t); window.removeEventListener("resize", onResize); };
   }, [resize]);
 
+  // paint(canvas, index): draw a frame of the sequence into some OTHER canvas.
+  // Synchronous — callers batch it onto their own animation frame.
+  const paint = useCallback((canvas, index) => {
+    const clamped = Math.max(0, Math.min(FRAME_COUNT - 1, Math.round(index)));
+    return drawInto(canvas, clamped);
+  }, [drawInto]);
+
   // Stable handle so effects that depend on `sequence` don't re-run each render.
-  return useMemo(() => ({ setFrame, preload, frameCount: FRAME_COUNT }), [setFrame, preload]);
+  return useMemo(
+    () => ({ setFrame, paint, preload, frameCount: FRAME_COUNT }),
+    [setFrame, paint, preload]
+  );
 }
