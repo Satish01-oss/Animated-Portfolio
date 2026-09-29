@@ -3,9 +3,12 @@ import o2fitness from "../assets/images/o2fitness.jpg";
 import powerlifter from "../assets/images/powerlifter.jpg";
 
 // Vite fingerprints these imports, so the browser can cache them forever.
+// One source of truth for the work section: the flip deck renders the front
+// (a slice of the panorama, addressed by `id`) and the back from this.
 export const projects = [
   {
     no: "01",
+    id: "pillar-1",
     tag: "Full-stack · AI",
     title: "Transaction Fraud Detection System",
     image: blockshield,
@@ -20,6 +23,7 @@ export const projects = [
   },
   {
     no: "02",
+    id: "pillar-2",
     tag: "MERN · Dashboards",
     title: "Gym Management Website",
     image: o2fitness,
@@ -34,6 +38,7 @@ export const projects = [
   },
   {
     no: "03",
+    id: "pillar-3",
     tag: "React · Tailwind",
     title: "Powerlifter Portfolio Website",
     image: powerlifter,

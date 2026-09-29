@@ -1,0 +1,381 @@
+/* ============================================================
+   pillars.css — pinned three-card sequence
+   Every rule is scoped under .pillars on purpose: the standalone
+   version of this animation styled bare `section`, `h1` and `img`
+   selectors, which would have re-written the rest of the site.
+   ============================================================ */
+
+.pillars {
+  position: relative;
+  background: var(--bg);
+  /* value ramp in neutrals — the palette allows one accent, and it is
+     already spent on the gray used for emphasis elsewhere. */
+  --pillar-1-bg: #b8b6b2;
+  --pillar-1-ink: #0a0a0a;
+  --pillar-2-bg: #6f6c67;
+  --pillar-2-ink: #f4f3f1;
+  --pillar-3-bg: #232325;
+  --pillar-3-ink: #f4f3f1;
+}
+
+/* ── Opening / closing statements ─────────────────────────── */
+
+.pillars__intro,
+.pillars__outro {
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  padding: clamp(4rem, 12vh, 8rem) var(--pad);
+  text-align: center;
+}
+.pillars__intro { position: relative; }
+.pillars__intro .section__index {
+  position: absolute;
+  top: clamp(3rem, 10vh, 6rem);
+  left: var(--pad);
+  margin-bottom: 0;
+}
+
+.pillars__statement {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: clamp(2rem, 6vw, 4.5rem);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  max-width: 16ch;
+}
+/* SplitType wraps each line; mask it so the line can slide up into view */
+.pillars__statement .line { overflow: hidden; }
+
+/* ── Pinned stage ─────────────────────────────────────────── */
+
+/* A column, not an absolutely-positioned heading over centred cards.
+   The heading used to sit at `top: 18%` while the cards were centred in the
+   full height — two independent positions that only happened to clear each
+   other at the ratios they were built on. On a wide, short screen the cards
+   grew tall enough to ride straight over the heading. Stacking them means
+   they can no longer collide, whatever the ratio. */
+.pillars__stage {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: clamp(1.25rem, 4vh, 3rem);
+  height: 100vh;
+  padding: clamp(2rem, 7vh, 5rem) var(--pad) clamp(1.5rem, 5vh, 3.5rem);
+  overflow: hidden;
+}
+
+.pillars__header {
+  flex: 0 0 auto;
+  width: 100%;
+  text-align: center;
+}
+.pillars__heading {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: clamp(1.75rem, 5vw, 4rem);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  /* Starting state also lives here so there is no flash before the
+     ScrollTrigger's first onUpdate writes it. */
+  transform: translateY(40px);
+  opacity: 0;
+  will-change: transform, opacity;
+}
+
+/* width is scrubbed by JS; keep it off the layout critical path */
+.pillars__row {
+  position: relative;
+  display: flex;
+  width: 75%;
+  /* Each card is 5:7, so card height follows card WIDTH — which follows the
+     viewport's width — while the room to show it is the viewport's HEIGHT.
+     On a wide, short screen those diverge and the cards outgrow the stage.
+     Capping the row's width in vh puts the derived height back under the
+     viewport's control: 3 cards at (H × 5/7) wide, plus the fanned gaps.
+     GSAP still animates `width` freely; this only ever clamps it. */
+  --pillar-max-h: 62vh;
+  max-width: calc(var(--pillar-max-h) * 3 * 5 / 7 + 72px);
+  perspective: 1000px;
+  will-change: width;
+}
+
+/* ── Cards ────────────────────────────────────────────────── */
+
+.pillar {
+  position: relative;
+  flex: 1;
+  aspect-ratio: 5 / 7;
+  transform-style: preserve-3d;
+  transform-origin: top;
+  will-change: transform;
+}
+#pillar-1 { border-radius: 20px 0 0 20px; }
+#pillar-3 { border-radius: 0 20px 20px 0; }
+
+/* The panels abut exactly, but `overflow: hidden` + border-radius makes each
+   clip edge antialiased — two adjacent half-transparent edges let the page
+   show through as a hairline seam, which is very visible while the slab is
+   still one photograph. Overlap by a pixel so each edge lands on its
+   neighbour's opaque interior instead of on the background. Once the cards
+   separate the offset is lost in a 36px gap. */
+.pillar + .pillar { margin-left: -1px; }
+
+.pillar__front,
+.pillar__back {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  border-radius: inherit;
+  overflow: hidden;
+}
+
+/* ── One photograph across three cards ────────────────────────
+   Each front paints the SAME image at 3× its own width, then offsets
+   to its own third. While the cards are joined the seams line up and
+   it reads as a single picture; the split cuts it into panels.
+
+   Because every card keeps the 5:7 ratio, 300% × 100% reproduces the
+   source's 15:7 exactly — so the slices never stretch, whatever the
+   gap between them happens to be. */
+.pillar__front {
+  background-size: 300% 100%;
+  background-repeat: no-repeat;
+  background-color: var(--bg-raised);
+}
+/* The image is attached only once the section is armed (see Pillars.jsx).
+   A CSS background cannot be lazy-loaded natively, and left unconditional
+   this half-megabyte competes with the hero frames during first load —
+   for a picture that is four screens down. */
+.pillars.is-armed .pillar__front {
+  background-image: url("../assets/images/pillars-panorama.jpg");
+}
+#pillar-1 .pillar__front { background-position: 0% 50%; }
+#pillar-2 .pillar__front { background-position: 50% 50%; }
+#pillar-3 .pillar__front { background-position: 100% 50%; }
+
+/* ── Back: the project card ───────────────────────────────────
+   Screenshot on top, detail below, links pinned to the base so all
+   three line up regardless of how long the bullet list runs. */
+.pillar__back {
+  /* The query container for everything inside, so `cqw` below means "% of
+     the card's width". It sits HERE rather than on .pillar__info because a
+     container sizing its own padding in cqw would be self-referential. */
+  container-type: inline-size;
+  display: flex;
+  flex-direction: column;
+  /* The card is pre-rotated so that, once .pillar itself turns 180°, the
+     two cancel and the face reads the right way round — which is also why
+     the magnetic links below are not mirrored. */
+  transform: rotateY(180deg);
+  border: 1px solid transparent;
+  transition: transform 0.6s var(--ease), border-color 0.6s var(--ease);
+}
+
+/* The face turned away must not swallow clicks meant for the other one. */
+.pillar__back { pointer-events: none; }
+.pillar.is-flipped .pillar__back { pointer-events: auto; }
+.pillar.is-flipped .pillar__front { pointer-events: none; }
+
+/* Hover, matching the work cards this replaces: the whole face lifts and
+   its edge sharpens. The lift composes onto the existing rotateY — .pillar
+   itself is off limits, GSAP owns its transform. */
+@media (hover: hover) {
+  .pillar.is-flipped .pillar__back:hover {
+    transform: rotateY(180deg) translateY(-10px);
+    border-color: currentColor;
+  }
+}
+
+/* ── Image reveal ─────────────────────────────────────────────
+   The screenshot sits slightly over-scaled and desaturated, then settles
+   to 1:1 in full colour on hover. Only transform, filter and opacity
+   animate — no layout, no re-decode of the bitmap. */
+/* A fixed share of the card rather than a fixed aspect ratio: the text
+   below then gets a predictable amount of room at every card size, which
+   is what keeps it filling the face instead of pooling into a void. */
+.pillar__shot {
+  display: block;
+  position: relative;
+  flex: 0 0 40%;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.25);
+}
+.pillar__shot img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  transform: scale(1.06);
+  filter: saturate(0.55) contrast(0.95);
+  transition: transform 1s var(--ease), filter 0.8s var(--ease);
+}
+.pillar__back:hover .pillar__shot img { transform: scale(1); filter: none; }
+
+/* Wash that lifts away as the image resolves */
+.pillar__shot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 40%, currentColor 100%);
+  opacity: 0.35;
+  transition: opacity 0.8s var(--ease);
+  pointer-events: none;
+}
+.pillar__back:hover .pillar__shot::after { opacity: 0.1; }
+
+/* ── Detail ───────────────────────────────────────────────────
+   Every metric below is in `cqw` — a percentage of the CARD's own width,
+   not the viewport's. The card is a fixed 5:7, so sizing the type, the
+   padding and the margins off its width makes the whole face self-similar:
+   it occupies the same proportion at 1024px and at 1600px. That is what
+   stops the text overflowing at one width and pooling into a void at
+   another, which fixed rem sizes could never do at both ends. */
+
+.pillar__info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: 5cqw 5cqw 5.5cqw;
+}
+
+.pillar__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.6rem;
+  margin-bottom: 3.5cqw;
+  font-size: max(8px, 3cqw);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.pillar__no {
+  font-family: var(--font-serif);
+  font-size: 7cqw;
+  letter-spacing: 0;
+  line-height: 1;
+  opacity: 0.55;
+}
+.pillar__tag { opacity: 0.8; text-align: right; }
+
+.pillar__title {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: 5.6cqw;
+  line-height: 1.14;
+  letter-spacing: -0.01em;
+  margin-bottom: 4cqw;
+}
+
+/* The list absorbs the slack. With the links pinned to the base, whatever
+   height is left over gets distributed between the bullets instead of
+   pooling as a void under the last one — so the face reads as filled at
+   any card size. `gap` stays the floor for short cards. */
+.pillar__points {
+  display: grid;
+  flex: 1;
+  align-content: space-between;
+  gap: 2.5cqw;
+}
+.pillar__points li {
+  position: relative;
+  padding-left: 4.5cqw;
+  font-size: max(9px, 3.6cqw);
+  line-height: 1.45;
+  /* Small type on the mid-gray back needs the contrast held up. */
+  opacity: 0.8;
+}
+.pillar__points li::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 0.68em;
+  width: 2cqw; height: 1px;
+  background: currentColor;
+  opacity: 0.7;
+}
+
+/* currentColor throughout, so the links stay legible on all three
+   backgrounds without a per-card override. */
+.pillar__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 5cqw;
+  margin-top: auto;
+  padding-top: 4.5cqw;
+}
+.pillar__links a {
+  font-size: max(9px, 3.2cqw);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding-bottom: 2px;
+  border-bottom: 1px solid currentColor;
+  opacity: 0.7;
+  transition: opacity 0.4s var(--ease);
+}
+.pillar__links a:hover { opacity: 1; }
+
+#pillar-1 .pillar__back { background: var(--pillar-1-bg); color: var(--pillar-1-ink); }
+#pillar-2 .pillar__back { background: var(--pillar-2-bg); color: var(--pillar-2-ink); }
+#pillar-3 .pillar__back { background: var(--pillar-3-bg); color: var(--pillar-3-ink); }
+
+/* ── Below the choreography breakpoint: a plain stacked list ─
+   usePillars never mounts here, so nothing is pinned and no inline
+   styles are written; the cards simply show their fronts. */
+
+@media (max-width: 999px) {
+  .pillars__stage {
+    height: auto;
+    gap: 3rem;
+    padding: clamp(4rem, 12vh, 8rem) var(--pad);
+    overflow: visible;
+  }
+  .pillars__heading { transform: none; opacity: 1; }
+
+  .pillars__row {
+    width: 100%;
+    /* Nothing is pinned here, so height is not scarce — drop the cap. */
+    max-width: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+    transform: none;
+    perspective: none;
+  }
+  .pillar {
+    width: 100%;
+    max-width: 420px;
+    aspect-ratio: auto;
+    border-radius: 20px !important;
+    transform-style: flat;
+  }
+
+  /* The panorama is a device for the desktop choreography — with nothing
+     to join or split, a decorative slice above every project would just be
+     a second image to scroll past. Show the project itself instead. */
+  .pillar__front { display: none; }
+
+  /* No flip here, so the back is simply the card — and must stay
+     clickable, since nothing ever adds .is-flipped. */
+  .pillar__back {
+    position: static;
+    transform: none;
+    backface-visibility: visible;
+    pointer-events: auto;
+    border-color: var(--line);
+  }
+  .pillar.is-flipped .pillar__back:hover,
+  .pillar__back:hover { transform: none; }
+
+  /* The card height is content-driven here, so a percentage-of-height shot
+     would collapse to nothing and the list has no slack to distribute. */
+  .pillar__shot { flex: 0 0 auto; aspect-ratio: 16 / 10; }
+  .pillar__points { flex: 0 0 auto; align-content: start; }
+  .pillar__points li { opacity: 0.85; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pillars__intro,
+  .pillars__outro { min-height: auto; }
+}

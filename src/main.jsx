@@ -4,7 +4,8 @@ import App from "./App.jsx";
 import "./styles/global.css";
 import "./styles/hero.css";
 import "./styles/about.css";
-import "./styles/projects.css";
+import "./styles/showreel.css";
+import "./styles/pillars.css";
 import "./styles/contact.css";
 
 // NOTE: intentionally NOT wrapped in <StrictMode>. StrictMode double-invokes

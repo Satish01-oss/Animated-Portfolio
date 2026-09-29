@@ -91,6 +91,10 @@ ul { list-style: none; }
 .js [data-reveal] { opacity: 0; transform: translateY(28px); }
 .js.reveal-failsafe [data-reveal] { opacity: 1 !important; transform: none !important; }
 
+/* Magnetic buttons are translated by JS (useScrollAnimations); keep them
+   GPU-friendly. Used by the project links and the contact address. */
+.magnetic { display: inline-block; will-change: transform; }
+
 /* ── Loader ───────────────────────────────────────────────── */
 
 .loader {

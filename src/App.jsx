@@ -7,7 +7,8 @@ import Nav from "./components/Nav.jsx";
 import Hero from "./components/Hero.jsx";
 import About from "./components/About.jsx";
 import Skills from "./components/Skills.jsx";
-import Work from "./components/Work.jsx";
+import Showreel from "./components/Showreel.jsx";
+import Pillars from "./components/Pillars.jsx";
 import Education from "./components/Education.jsx";
 import Contact from "./components/Contact.jsx";
 import Footer from "./components/Footer.jsx";
@@ -31,15 +32,15 @@ export default function App() {
   const sequence = useImageSequence(canvasRef);
 
   const [progress, setProgress] = useState(0);
-  const [ready, setReady] = useState(false);   // priority frames decoded → lift loader + start motion
+  const [ready, setReady] = useState(false);   // hero sequence decoded → lift loader + start motion
   const [showLoader, setShowLoader] = useState(true);
 
   // Custom cursor and character parallax are independent of load state.
   useCursor(cursorRef);
   useCharacterHover(canvasRef);
 
-  // Kick off the priority preload once. StrictMode double-invokes effects in
-  // dev, so guard against a second preload with a ref.
+  // Kick off the preload once. A ref guards it so a second mount (StrictMode
+  // in dev, or any future remount) cannot start the pool twice.
   const started = useRef(false);
   useEffect(() => {
     if (started.current) return;
@@ -60,6 +61,9 @@ export default function App() {
 
   // Smooth scroll + progress rail, and all scroll-driven animation, start
   // only after the loader lifts so every measurement sees a settled layout.
+  // The section-owned sequences (<Showreel>, <Pillars>) take the same flag,
+  // and because child effects run before the parent's, the final
+  // ScrollTrigger.refresh() inside useScrollAnimations covers them too.
   useLenis(ready, railRefs);
   useScrollAnimations(ready, sequence);
 
@@ -75,7 +79,8 @@ export default function App() {
         <Hero ref={canvasRef} />
         <About />
         <Skills />
-        <Work />
+        <Showreel ready={ready} />
+        <Pillars ready={ready} />
         <Education />
         <Contact />
         <Footer />

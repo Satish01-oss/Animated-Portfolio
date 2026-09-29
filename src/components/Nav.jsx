@@ -6,6 +6,7 @@ export default function Nav({ theme, onToggleTheme }) {
       <nav className="nav__links" aria-label="Primary">
         <a href="#about">About</a>
         <a href="#skills">Skills</a>
+        <a href="#showreel">Showreel</a>
         <a href="#work">Work</a>
         <a href="#contact">Contact</a>
       </nav>

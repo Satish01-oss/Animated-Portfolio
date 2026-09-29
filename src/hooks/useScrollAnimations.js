@@ -97,23 +97,6 @@ export function useScrollAnimations(enabled, sequence) {
         });
       });
 
-      // ── Work: vertical scroll → horizontal travel ───────────
-      mm.add(DESKTOP, () => {
-        const track = document.querySelector("#workTrack");
-        const section = document.querySelector(".work");
-        if (!track || !section) return;
-        const distance = () => track.scrollWidth - window.innerWidth;
-        const tween = gsap.to(track, {
-          x: () => -distance(),
-          ease: "none",
-          scrollTrigger: {
-            trigger: section, start: "top top", end: () => "+=" + distance(),
-            pin: true, scrub: 0.6, anticipatePin: 1, invalidateOnRefresh: true,
-          },
-        });
-        return () => tween.scrollTrigger?.kill();
-      });
-
       // ── Magnetic buttons ────────────────────────────────────
       mm.add(DESKTOP, () => {
         const items = gsap.utils.toArray(".magnetic");

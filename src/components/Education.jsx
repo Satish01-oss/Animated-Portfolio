@@ -1,7 +1,7 @@
 export default function Education() {
   return (
     <section className="education" id="education" data-section="Education">
-      <p className="section__index">04 — Education</p>
+      <p className="section__index">05 — Education</p>
       <div className="edu" data-reveal>
         <div className="edu__year">2025 — 2028 <span>(expected)</span></div>
         <div className="edu__body">

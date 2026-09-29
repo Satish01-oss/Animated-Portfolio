@@ -16,6 +16,14 @@
   letter-spacing: -0.03em;
 }
 
+/* Icons inherit type colour and scale with the text they sit beside. */
+.icon {
+  width: 1em;
+  height: 1em;
+  display: block;
+  flex: 0 0 auto;
+}
+
 .contact__mail {
   display: inline-block;
   margin-top: clamp(2rem, 6vh, 3.5rem);
@@ -28,28 +36,53 @@
 }
 .contact__mail:hover { color: var(--ink); }
 
+/* ── Channels ─────────────────────────────────────────────────
+   Marks only — no handles, no URLs printed. Each tile is the whole
+   link; the network name lives in aria-label / <title>, so the
+   destination is still announced and shown in the status bar. */
+
 .contact__list {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1.5rem 2rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.9rem;
   margin-top: clamp(3.5rem, 9vh, 6rem);
   padding-top: 2.5rem;
   border-top: 1px solid var(--line);
 }
-.contact__list li { display: flex; flex-direction: column; gap: 0.4rem; }
-.contact__list span {
-  font-size: 0.68rem;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--ink-faint);
+
+.contact__mark {
+  display: grid;
+  place-items: center;
+  width: 62px;
+  height: 62px;
+  border-radius: 18px;
+  background: var(--ink);
+  color: var(--bg);
+  font-size: 26px;                     /* the .icon is sized in em */
+  transition: background-color 0.45s var(--ease), color 0.45s var(--ease),
+              transform 0.45s var(--ease), box-shadow 0.45s var(--ease);
 }
-.contact__list a {
-  font-size: 0.98rem;
-  width: fit-content;
-  border-bottom: 1px solid transparent;
-  transition: border-color 0.4s var(--ease);
+
+/* Brand colour on hover only: at rest the row stays in the site's
+   monochrome, so four logos don't fight the palette. */
+.contact__mark:hover { transform: translateY(-4px); }
+.contact__mark.is-whatsapp:hover {
+  background: #25d366; color: #05230f;
+  box-shadow: 0 12px 30px rgba(37, 211, 102, 0.35);
 }
-.contact__list a:hover { border-color: var(--ink); }
+.contact__mark.is-linkedin:hover {
+  background: #0a66c2; color: #fff;
+  box-shadow: 0 12px 30px rgba(10, 102, 194, 0.35);
+}
+.contact__mark.is-github:hover {
+  background: #f4f3f1; color: #0a0a0a;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.28);
+}
+.contact__mark.is-instagram:hover {
+  background: linear-gradient(45deg, #f9ce34, #ee2a7b 45%, #6228d7);
+  color: #fff;
+  box-shadow: 0 12px 30px rgba(238, 42, 123, 0.35);
+}
 
 /* ── Custom cursor ────────────────────────────────────────── */
 
