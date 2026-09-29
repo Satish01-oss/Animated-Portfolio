@@ -85,7 +85,7 @@ export default function App() {
         <Work ready={ready} />
         <Projects />
         <Education />
-        <Contact ready={ready} sequence={sequence} />
+        <Contact />
         <Footer />
       </main>
     </>

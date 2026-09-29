@@ -28,7 +28,7 @@ And it reads **as the CV**: every word about Satish comes from
 | | | …the cards **split**, then **turn over** to show each project | **The lights come back up** |
 | 04 | **Projects** | "Beyond the reel": the CV's other projects (04–07) as CV entries | — |
 | 05 | **Education** | BCA, RIIT / Kazi Nazrul University, and the CV's relevant areas | — |
-| 06 | **Contact** | "Let's build" and the CV's career objective; **the character returns** and turns to face you | The page ends where it began |
+| 06 | **Contact** | "Let's build", the CV's career objective, and a card with the email (one-click copy), the networks and his local time | His **name, edge to edge**, rises into the footer |
 
 **The profile card.** It keeps the *first impression* — the hero's opening
 frame, marquee still running behind his head — not the sequence's last frame.
@@ -47,8 +47,11 @@ Three things run through the whole page and tie it together:
 - **The lights.** One CSS number, `--dim`, scrubbed by scroll, takes the page
   from paper to night and back, so there is never a hard-edged colour band.
 - **Type behind the subject.** The outlined marquee runs behind the character
-  in the hero, behind the ring in Work, and "Let's build" sits behind him at
-  the end.
+  in the hero and behind the ring in Work.
+- **A still ending.** After the pinned set pieces, Contact and the footer are
+  plain type — nothing repaints on scroll there. (An earlier version brought
+  the character back in a second canvas; repainting 1920×1080 frames into it
+  on every scroll step cost dropped frames, so it was taken out.)
 
 ---
 
@@ -79,13 +82,12 @@ Three things run through the whole page and tie it together:
 │   │   ├── About / Skills / Education / Footer
 │   │   ├── Projects.jsx          # 04: the rest of the CV's projects
 │   │   ├── Work.jsx              # 03: ring stage + the card deck it lands on
-│   │   ├── Contact.jsx           # the closing shot (character returns)
+│   │   ├── Contact.jsx           # the sign-off: objective + contact card
 │   │   ├── three/Stage.jsx       # <Canvas> + bloom (lazy-loaded)
 │   │   └── three/Ring.jsx        # the ring: spin → unroll → land (shader)
 │   ├── hooks/
 │   │   ├── useIntro.js           # sequence → profile card → Profile → cover
 │   │   ├── useWork.js            # ring progress, hand-over, split + flip
-│   │   ├── useBookend.js         # repaints hero frames in Contact
 │   │   ├── useScrollAnimations.js# the lights, drawn rules, reveals, magnetics
 │   │   └── useLenis, useImageSequence, useCursor, useTheme, …
 │   ├── data/
@@ -155,8 +157,6 @@ Measured on the production build over a throttled **5 Mbps** line:
   lazy-loaded natively, so the card fronts get it from an `.is-armed` class
   rather than unconditionally. The ring imports the same fingerprinted file,
   so one download serves both.
-- **The Contact bookend costs nothing.** It repaints frames the hero already
-  decoded into a second canvas — no extra requests.
 - **Nothing scroll-driven renders React.** Scroll writes into refs the ring
   reads in `useFrame`; the render loop is parked (`frameloop="never"`) when the
   chapter is off screen *and* once the ring has handed over to the DOM cards.
@@ -194,9 +194,8 @@ Decisions worth knowing about, and why:
   requires responsiveness and graceful degradation, so instead: below 1000px,
   under `prefers-reduced-motion`, or without WebGL, the ring is skipped and the
   cards stack into a plain list. On narrow screens the character dims behind the
-  About text instead of framing into a portrait, and in Contact he stands under
-  the links rather than beside them. React Router went with it — this is one
-  page.
+  Profile text instead of framing into a portrait. React Router went with
+  it — this is one page.
 
 - **The neon palette was neutralised.** Cyan/pink/green accents and the red card
   back became the site's white / black / single-gray-accent palette.

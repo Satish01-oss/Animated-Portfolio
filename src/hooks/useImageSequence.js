@@ -60,31 +60,25 @@ export function useImageSequence(canvasRef) {
     return null;
   }, []);
 
-  // Cover-fit one frame into any canvas. Shared by the hero and by paint(),
-  // which lets another section (the Contact bookend) reuse the decoded
-  // frames without downloading a thing.
-  //
-  // Where cover-fit has to crop vertically (screens wider than the frames'
-  // 16:9) the crop is taken mostly from the BOTTOM: the character's hair
-  // stays in shot and the jacket gives way instead.
+  // Cover-fit the current frame into the canvas. Where cover-fit has to crop
+  // vertically (screens wider than the frames' 16:9) the crop is taken
+  // mostly from the BOTTOM: the character's hair stays in shot and the
+  // jacket gives way instead.
   const ANCHOR_Y = 0.15;
 
-  const drawInto = useCallback((canvas, index) => {
-    const img = nearest(index);
-    if (!canvas || !img) return false;
+  const draw = useCallback(() => {
+    rafId.current = null;
+    const canvas = canvasRef.current;
+    const img = nearest(current.current);
+    if (!canvas || !img) return;
     const ctx = canvas.getContext("2d");
     const cw = canvas.width, ch = canvas.height;
     const ratio = Math.max(cw / img.width, ch / img.height);
     const dw = img.width * ratio, dh = img.height * ratio;
     ctx.clearRect(0, 0, cw, ch);
     ctx.drawImage(img, (cw - dw) / 2, (ch - dh) * ANCHOR_Y, dw, dh);
-    return true;
-  }, [nearest]);
-
-  const draw = useCallback(() => {
-    rafId.current = null;
-    if (drawInto(canvasRef.current, current.current)) lastDrawn.current = current.current;
-  }, [canvasRef, drawInto]);
+    lastDrawn.current = current.current;
+  }, [canvasRef, nearest]);
 
   const markDirty = useCallback(() => {
     if (rafId.current === null) rafId.current = requestAnimationFrame(draw);
@@ -169,16 +163,9 @@ export function useImageSequence(canvasRef) {
     return () => { clearTimeout(t); window.removeEventListener("resize", onResize); };
   }, [resize]);
 
-  // paint(canvas, index): draw a frame of the sequence into some OTHER canvas.
-  // Synchronous — callers batch it onto their own animation frame.
-  const paint = useCallback((canvas, index) => {
-    const clamped = Math.max(0, Math.min(FRAME_COUNT - 1, Math.round(index)));
-    return drawInto(canvas, clamped);
-  }, [drawInto]);
-
   // Stable handle so effects that depend on `sequence` don't re-run each render.
   return useMemo(
-    () => ({ setFrame, paint, preload, frameCount: FRAME_COUNT }),
-    [setFrame, paint, preload]
+    () => ({ setFrame, preload, frameCount: FRAME_COUNT }),
+    [setFrame, preload]
   );
 }

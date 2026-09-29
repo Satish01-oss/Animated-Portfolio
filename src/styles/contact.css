@@ -1,61 +1,99 @@
 /* ============================================================
-   contact.css — closing section + custom cursor
+   contact.css — the sign-off + custom cursor
    ============================================================ */
 
 .contact {
   position: relative;
-  min-height: 100vh;
-  overflow: hidden;
   background: var(--bg);
-  padding: clamp(7rem, 22vh, 14rem) var(--pad) clamp(5rem, 12vh, 8rem);
+  padding: clamp(7rem, 20vh, 12rem) var(--pad) clamp(4rem, 10vh, 7rem);
   border-top: 1px solid var(--line);
 }
 
-/* The closing shot: the hero character, repainted from the frames already
-   in memory (useBookend), rising from the bottom edge on the right exactly
-   as he stands in the opening. */
-.contact__figure {
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  z-index: 1;
-  width: min(58vw, 150vh);
-  height: 100%;
-  pointer-events: none;
-}
-.contact__canvas { width: 100%; height: 100%; }
-
-/* The body is a positioning context only; the title is lifted UNDER the
-   figure and everything clickable over it. */
-.contact__body { position: static; }
-.contact__body > * { position: relative; z-index: 2; }
-.contact__body > .contact__title { z-index: 0; }
-
 .contact__title {
   font-weight: 500;
-  font-size: clamp(3rem, 12.5vw, 10.5rem);
+  font-size: clamp(3rem, 13vw, 11rem);
   line-height: 0.9;
   letter-spacing: -0.06em;
-  white-space: nowrap;
 }
 
-@media (max-width: 860px) {
-  /* No room beside the text: he stands UNDER it instead, in the flow, on the
-     section's bottom edge — so he can never sit behind the links. */
-  .contact {
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
-    padding-bottom: 0;
-  }
-  .contact__figure {
-    order: 2;
-    position: relative;
-    width: 100%;
-    height: min(56svh, 120vw);
-    margin-top: 2.5rem;
-  }
-  .contact__title { white-space: normal; }
+/* The objective on the left, the ways in on the right. */
+.contact__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: clamp(2rem, 6vw, 6rem);
+  margin-top: clamp(2.5rem, 7vh, 4.5rem);
+  padding-top: clamp(1.5rem, 4vh, 2.5rem);
+  border-top: 1px solid var(--line);
+}
+
+.contact__key {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+/* The CV's career objective — the last thing the page says about him. */
+.contact__lede {
+  max-width: 40ch;
+  font-size: clamp(1.05rem, 1.5vw, 1.3rem);
+  line-height: 1.45;
+  letter-spacing: -0.02em;
+}
+.contact__lede .contact__key { margin-bottom: 0.9rem; }
+
+/* ── The card: email, networks, local time ─────────────────── */
+
+.contact__row {
+  display: grid;
+  grid-template-columns: 7.5rem minmax(0, 1fr);
+  gap: 1rem;
+  align-items: center;
+  padding: 1.15rem 0;
+  border-bottom: 1px solid var(--line);
+}
+.contact__row:first-child { padding-top: 0; }
+
+.contact__email {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem 1rem;
+}
+.contact__mail {
+  font-size: clamp(1.05rem, 1.7vw, 1.45rem);
+  letter-spacing: -0.03em;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 0.1em;
+  transition: border-color 0.4s var(--ease);
+}
+.contact__mail:hover { border-color: currentColor; }
+
+.contact__copy {
+  padding: 0.4rem 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  background: none;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: color 0.3s var(--ease), border-color 0.3s var(--ease),
+              background-color 0.3s var(--ease);
+}
+.contact__copy:hover { color: var(--ink); border-color: currentColor; }
+.contact__copy.is-copied { color: var(--bg); background: var(--ink); border-color: var(--ink); }
+
+.contact__time {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
 }
 
 /* Icons inherit type colour and scale with the text they sit beside. */
@@ -66,66 +104,30 @@
   flex: 0 0 auto;
 }
 
-/* The CV's career objective — the last thing the page says about him. */
-.contact__lede {
-  margin-top: clamp(1.75rem, 5vh, 3rem);
-  max-width: 38ch;
-  font-size: clamp(0.95rem, 1.25vw, 1.08rem);
-  line-height: 1.6;
-  color: var(--ink-soft);
-}
-.contact__lede-key {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-family: var(--font-mono);
-  font-size: 0.66rem;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: var(--ink-faint);
-}
-
-.contact__mail {
-  display: inline-block;
-  margin-top: clamp(1.75rem, 5vh, 3rem);
-  font-size: clamp(1.05rem, 3vw, 2.1rem);
-  letter-spacing: -0.03em;
-  color: var(--accent);
-  border-bottom: 1px solid currentColor;
-  padding-bottom: 0.15em;
-  transition: color 0.4s var(--ease);
-}
-.contact__mail:hover { color: var(--ink); }
-
-/* ── Channels ─────────────────────────────────────────────────
-   Marks only — no handles, no URLs printed. Each tile is the whole
-   link; the network name lives in aria-label / <title>, so the
-   destination is still announced and shown in the status bar. */
-
+/* Marks only — no handles, no URLs printed. Each tile is the whole link;
+   the network name lives in aria-label / <title>, so the destination is
+   still announced and shown in the status bar. */
 .contact__list {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.9rem;
-  margin-top: clamp(3.5rem, 9vh, 6rem);
-  padding-top: 2.5rem;
-  border-top: 1px solid var(--line);
+  gap: 0.6rem;
 }
-
 .contact__mark {
   display: grid;
   place-items: center;
-  width: 62px;
-  height: 62px;
-  border-radius: 18px;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
   background: var(--ink);
   color: var(--bg);
-  font-size: 26px;                     /* the .icon is sized in em */
+  font-size: 19px;                     /* the .icon is sized in em */
   transition: background-color 0.45s var(--ease), color 0.45s var(--ease),
               transform 0.45s var(--ease), box-shadow 0.45s var(--ease);
 }
 
 /* Brand colour on hover only: at rest the row stays in the site's
    monochrome, so four logos don't fight the palette. */
-.contact__mark:hover { transform: translateY(-4px); }
+.contact__mark:hover { transform: translateY(-3px); }
 .contact__mark.is-whatsapp:hover {
   background: #25d366; color: #05230f;
   box-shadow: 0 12px 30px rgba(37, 211, 102, 0.35);
@@ -142,6 +144,13 @@
   background: linear-gradient(45deg, #f9ce34, #ee2a7b 45%, #6228d7);
   color: #fff;
   box-shadow: 0 12px 30px rgba(238, 42, 123, 0.35);
+}
+
+@media (max-width: 860px) {
+  .contact__grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 480px) {
+  .contact__row { grid-template-columns: 1fr; gap: 0.7rem; }
 }
 
 /* ── Custom cursor ────────────────────────────────────────── */

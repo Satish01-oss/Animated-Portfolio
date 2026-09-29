@@ -1,8 +1,8 @@
-import { useRef } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Icon from "./Icon.jsx";
-import { useBookend } from "../hooks/useBookend.js";
-import { objective } from "../data/cv.js";
+import { objective, person } from "../data/cv.js";
 
+const EMAIL = "ss7233563@gmail.com";
 // wa.me wants the number bare: country code, no +, no spaces.
 const WHATSAPP = "919339974912";
 
@@ -13,57 +13,109 @@ const channels = [
   { id: "instagram", name: "Instagram", href: "https://instagram.com/_satishkumar_ram_",          cursor: "Open" },
 ];
 
+/** The time in India, refreshed every half minute — for anyone writing from
+ *  another time zone and wondering when a reply is likely. */
+function useIndiaTime() {
+  const format = useMemo(
+    () => new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Kolkata", hour: "2-digit", minute: "2-digit" }),
+    []
+  );
+  const [time, setTime] = useState(() => format.format(new Date()));
+  useEffect(() => {
+    const id = setInterval(() => setTime(format.format(new Date())), 30_000);
+    return () => clearInterval(id);
+  }, [format]);
+  return time;
+}
+
 /**
- * 06 — Contact, and the page's closing shot: the character from the opening
- * returns and turns to face the visitor as the section arrives (useBookend).
- * The heading sits BEHIND him, as the hero's marquee does — the same depth
- * trick, so the last screen answers the first.
+ * 06 — Contact: the sign-off. "Let's build" and the CV's career objective on
+ * the left; on the right, the ways to reach him as a short card — the
+ * address (copyable in one click), the networks, and his local time.
+ *
+ * Deliberately still: after a page of pinned, scroll-driven set pieces, the
+ * last screen is plain type that costs nothing to scroll past.
  */
-export default function Contact({ ready, sequence }) {
-  const canvasRef = useRef(null);
-  useBookend(ready, canvasRef, sequence);
+export default function Contact() {
+  const time = useIndiaTime();
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    if (!copied) return;
+    const t = setTimeout(() => setCopied(false), 1800);
+    return () => clearTimeout(t);
+  }, [copied]);
+
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(EMAIL);
+      setCopied(true);
+    } catch {
+      window.location.href = `mailto:${EMAIL}`;   // no clipboard access: just write
+    }
+  };
 
   return (
     <section className="contact" id="contact" data-section="Contact">
-      <div className="contact__figure" aria-hidden="true">
-        <canvas className="contact__canvas" ref={canvasRef} />
-      </div>
+      <p className="section__index">06 — Contact</p>
+      <h2 className="contact__title" data-split-chars>Let's build</h2>
 
-      <div className="contact__body">
-        <p className="section__index">06 — Contact</p>
-        <h2 className="contact__title" data-split-chars>Let's build</h2>
-
-        {/* The CV's career objective closes the page. */}
+      <div className="contact__grid">
         <p className="contact__lede" data-reveal>
-          <span className="contact__lede-key">Open to internships — career objective</span>
+          <span className="contact__key">Open to internships — career objective</span>
           {objective}
         </p>
 
-        {/* No icon here on purpose — the address is the thing worth reading. */}
-        <a className="contact__mail magnetic" href="mailto:ss7233563@gmail.com" data-cursor="Mail">
-          ss7233563@gmail.com
-        </a>
-
-        {/* Marks only: no handles, no URLs on screen. The destination still
-            reaches assistive tech and the status bar through the href and the
-            accessible name, so nothing is lost — it is just not printed. */}
-        <ul className="contact__list">
-          {channels.map((c) => (
-            <li key={c.id}>
-              <a
-                className={`contact__mark is-${c.id}`}
-                href={c.href}
-                target="_blank"
-                rel="noopener"
-                aria-label={c.name}
-                title={c.name}
-                data-cursor={c.cursor}
+        <dl className="contact__card" data-reveal>
+          <div className="contact__row">
+            <dt className="contact__key">Email</dt>
+            <dd className="contact__email">
+              <a className="contact__mail magnetic" href={`mailto:${EMAIL}`} data-cursor="Write">{EMAIL}</a>
+              <button
+                className={`contact__copy${copied ? " is-copied" : ""}`}
+                type="button"
+                onClick={copy}
+                data-cursor={copied ? "Copied" : "Copy"}
               >
-                <Icon name={c.id} label={c.name} />
-              </a>
-            </li>
-          ))}
-        </ul>
+                <span aria-live="polite">{copied ? "Copied" : "Copy"}</span>
+              </button>
+            </dd>
+          </div>
+
+          <div className="contact__row">
+            <dt className="contact__key">Elsewhere</dt>
+            {/* Marks only: no handles, no URLs on screen. The destination still
+                reaches assistive tech and the status bar through the href and
+                the accessible name, so nothing is lost — it is just not printed. */}
+            <dd>
+              <ul className="contact__list">
+                {channels.map((c) => (
+                  <li key={c.id}>
+                    <a
+                      className={`contact__mark is-${c.id}`}
+                      href={c.href}
+                      target="_blank"
+                      rel="noopener"
+                      aria-label={c.name}
+                      title={c.name}
+                      data-cursor={c.cursor}
+                    >
+                      <Icon name={c.id} label={c.name} />
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </dd>
+          </div>
+
+          <div className="contact__row">
+            <dt className="contact__key">Local time</dt>
+            <dd className="contact__time">
+              <span className="pulse" aria-hidden="true" />
+              {person.location} · {time} IST
+            </dd>
+          </div>
+        </dl>
       </div>
     </section>
   );

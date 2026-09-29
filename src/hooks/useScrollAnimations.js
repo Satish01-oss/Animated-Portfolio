@@ -96,6 +96,18 @@ export function useScrollAnimations(enabled) {
         });
       });
 
+      // ── Rising type ─────────────────────────────────────────
+      // [data-rise]: the element masks its child, which rises into view once
+      // on arrival — a single transform, nothing tied to scroll after that.
+      mm.add(MOTION_OK, () => {
+        gsap.utils.toArray("[data-rise]").forEach((el) => {
+          gsap.from(el.children, {
+            yPercent: 100, duration: 1.3, ease: "power4.out",
+            scrollTrigger: { trigger: el, start: "top 95%" },
+          });
+        });
+      });
+
       // ── Generic reveals ─────────────────────────────────────
       gsap.utils.toArray("[data-reveal]").forEach((el) => {
         gsap.to(el, {

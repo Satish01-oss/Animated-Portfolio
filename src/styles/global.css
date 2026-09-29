@@ -157,6 +157,30 @@ ul, ol { list-style: none; }
    GPU-friendly. Used by the project links and the contact address. */
 .magnetic { display: inline-block; will-change: transform; }
 
+/* A slow pulse for things that are live: a build still in progress, the
+   clock in Contact. Transform and opacity only, so it never repaints. */
+.pulse {
+  position: relative;
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ink);
+}
+.pulse::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--ink);
+  animation: pulse 2.4s var(--ease) infinite;
+}
+@keyframes pulse {
+  0%   { transform: scale(1);   opacity: 0.5; }
+  70%  { transform: scale(3.2); opacity: 0; }
+  100% { transform: scale(3.2); opacity: 0; }
+}
+
 /* ── Nav ──────────────────────────────────────────────────── */
 
 .nav {
@@ -278,13 +302,44 @@ ul, ol { list-style: none; }
 /* ── Footer ───────────────────────────────────────────────── */
 
 .footer {
+  padding: clamp(3rem, 9vh, 6rem) var(--pad) 2rem;
+  border-top: 1px solid var(--line);
+  background: var(--bg);
+}
+
+/* The credits: his name, edge to edge. "Satish Kumar Ram" in Geist 600 at
+   this tracking is 7.72 font-sizes wide, so dividing the content width by a
+   hair more than that fills it exactly, at any viewport. The <p> is the mask
+   the name rises through ([data-rise], useScrollAnimations). */
+.footer__name {
+  overflow: hidden;
+  margin-bottom: clamp(1.5rem, 4vh, 2.5rem);
+  font-size: calc((100vw - 2 * var(--pad)) / 7.8);
+  font-weight: 600;
+  line-height: 0.86;
+  letter-spacing: -0.065em;
+  white-space: nowrap;
+}
+/* The letters are painted with a gradient instead of a flat colour: full ink
+   through the upper part, fading out through the lower part, so the name
+   dissolves into the page beneath it. It is drawn in --ink, so it follows
+   the theme on its own — black on the light page, white on the dark one. */
+.footer__name span {
+  display: block;
+  padding-bottom: 0.06em;
+  background: linear-gradient(180deg, var(--ink) 30%, transparent 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
+.footer__meta {
   display: flex;
   flex-wrap: wrap;
   gap: 1rem;
   justify-content: space-between;
   align-items: center;
-  padding: 3rem var(--pad);
-  border-top: 1px solid var(--line);
   font-family: var(--font-mono);
   font-size: 0.7rem;
   letter-spacing: 0.04em;

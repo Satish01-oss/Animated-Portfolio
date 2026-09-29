@@ -78,29 +78,6 @@
 }
 .project__private { padding-left: 0.7rem; }
 
-/* A slow pulse: the one moving thing in an otherwise still list, and it
-   only appears on work that is actually still moving. */
-.project__pulse {
-  position: relative;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--ink);
-}
-.project__pulse::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  background: var(--ink);
-  animation: projectPulse 2.4s var(--ease) infinite;
-}
-@keyframes projectPulse {
-  0%   { transform: scale(1);   opacity: 0.5; }
-  70%  { transform: scale(3.2); opacity: 0; }
-  100% { transform: scale(3.2); opacity: 0; }
-}
-
 /* ── Private: the entry is there, its details are not ───────── */
 .project__redacted {
   display: grid;

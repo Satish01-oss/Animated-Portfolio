@@ -31,7 +31,7 @@ export default function Projects() {
                 <p className="project__tags">
                   {p.status && (
                     <span className="project__status">
-                      <span className="project__pulse" aria-hidden="true" />
+                      <span className="pulse" aria-hidden="true" />
                       {p.status}
                     </span>
                   )}
