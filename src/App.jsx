@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 
 import Cursor from "./components/Cursor.jsx";
 import ProgressRail from "./components/ProgressRail.jsx";
@@ -88,6 +89,8 @@ export default function App() {
         <Contact />
         <Footer />
       </main>
+
+      <SpeedInsights />
     </>
   );
 }
