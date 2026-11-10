@@ -79,7 +79,7 @@ export default function Work({ ready }) {
         <div className="work__marquee" aria-hidden="true">
           <div className="work__marquee-track">
             {[0, 1].map((n) => (
-              <span key={n}>BlockShield AI — O2 Fitness Gym — Powerlifting Portfolio —&nbsp;</span>
+              <span key={n}>Design Library — O2 Fitness Gym — Powerlifting Portfolio —&nbsp;</span>
             ))}
           </div>
         </div>
@@ -113,20 +113,20 @@ export default function Work({ ready }) {
 
                 <div className="pillar__back">
                   <a
-                    className="pillar__shot"
+                    className={`pillar__shot${p.image ? "" : " pillar__shot--text"}`}
                     href={p.live}
                     target="_blank"
                     rel="noopener"
                     data-cursor="Visit"
                   >
-                    <img
+                    {p.image ? <img
                       src={p.image}
                       width="1440"
                       height="900"
                       loading="lazy"
                       decoding="async"
                       alt={p.alt}
-                    />
+                    /> : <span>{p.name}</span>}
                   </a>
 
                   <div className="pillar__info">
@@ -142,7 +142,7 @@ export default function Work({ ready }) {
                     </ul>
 
                     <div className="pillar__links">
-                      <a className="magnetic" href={p.repo} target="_blank" rel="noopener" data-cursor="Code">Repository</a>
+                      {p.repo && <a className="magnetic" href={p.repo} target="_blank" rel="noopener" data-cursor="Code">Repository</a>}
                       <a className="magnetic" href={p.live} target="_blank" rel="noopener" data-cursor="Visit">Live demo</a>
                     </div>
                   </div>

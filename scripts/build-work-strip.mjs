@@ -18,7 +18,7 @@ const PANEL_H = 784;
 // every panel keeps its site's headline — the thing that makes it readable
 // at a glance as it swings past.
 const panels = [
-  { src: "src/assets/images/blockshield.jpg", left: 0 },
+  { src: null }, // Design Library uses a neutral panel, not the previous project screenshot.
   { src: "src/assets/images/o2fitness.jpg",   left: 250 },
   { src: "src/assets/images/powerlifter.jpg", left: 80 },
 ];
@@ -28,10 +28,11 @@ const CROP_W = Math.round((CROP_H * 5) / 7);   // 643
 
 const tiles = await Promise.all(
   panels.map(({ src, left }) =>
-    sharp(src)
+    src ? sharp(src)
       .extract({ left, top: 0, width: CROP_W, height: CROP_H })
       .resize(PANEL_W, PANEL_H)
       .toBuffer()
+      : sharp({ create: { width: PANEL_W, height: PANEL_H, channels: 3, background: "#161616" } }).png().toBuffer()
   )
 );
 

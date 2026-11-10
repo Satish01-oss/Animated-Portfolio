@@ -145,6 +145,17 @@
   overflow: hidden;
   background: rgba(0, 0, 0, 0.25);
 }
+/* Text-only preview for a project without a screenshot. */
+.pillar__shot--text {
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+  font-size: clamp(1.5rem, 8cqw, 2.5rem);
+  letter-spacing: -0.04em;
+  text-align: center;
+}
+.pillar__shot--text::after { display: none; }
+
 /* The screenshot sits over-scaled and desaturated, then settles to 1:1 in
    full colour on hover. Only transform and filter animate. */
 .pillar__shot img {

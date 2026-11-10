@@ -1,4 +1,3 @@
-import blockshield from "../assets/images/blockshield.jpg";
 import o2fitness from "../assets/images/o2fitness.jpg";
 import powerlifter from "../assets/images/powerlifter.jpg";
 
@@ -10,17 +9,17 @@ export const projects = [
   {
     no: "01",
     id: "pillar-1",
-    tag: "Full-stack · AI",
-    title: "Transaction Fraud Detection System",
-    name: "BlockShield AI",
-    image: blockshield,
-    alt: "BlockShield AI home page: a fraud-monitoring panel showing wallet risk and AI confidence.",
-    repo: "https://github.com/Satish01-oss/BlockShield-AI",
-    live: "https://block-shield-ai.vercel.app/",
+    tag: "Web · Design resources",
+    title: "Design Library",
+    name: "Design Library",
+    image: null,
+    alt: "",
+    repo: null,
+    live: "https://skillstosalary.com/design-library",
     points: [
-      "Full-stack app in React.js, Node.js, Express.js and MongoDB.",
-      "Integrated a Python machine-learning model for fraud detection.",
-      "Authentication, transaction monitoring and reporting dashboards.",
+      "Landing pages, sales funnels and reusable website sections.",
+      "Live design previews with copy-ready code.",
+      "Responsive designs for desktop, tablet and mobile.",
     ],
   },
   {
