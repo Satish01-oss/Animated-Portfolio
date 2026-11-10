@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect, useRef, useState } from "react";
+import { Component, Suspense, lazy, useCallback, useEffect, useRef, useState } from "react";
 import { projects } from "../data/projects.js";
 import { useWork, WORK_DESKTOP } from "../hooks/useWork.js";
 
@@ -7,19 +7,24 @@ import { useWork, WORK_DESKTOP } from "../hooks/useWork.js";
 // ring never fetch it at all.
 const Stage = lazy(() => import("./three/Stage.jsx"));
 
-/**
- * Decide once, at mount, whether this device gets the WebGL ring: the same
- * breakpoint as the card choreography it hands over to, motion allowed, and
- * a working WebGL context.
- */
+// A failed optional scene must not take the portfolio or project links down.
+class StageBoundary extends Component {
+  state = { failed: false };
+  static getDerivedStateFromError() { return { failed: true }; }
+  componentDidCatch() { this.props.onFailure(); }
+  render() { return this.state.failed ? null : this.props.children; }
+}
+
 function canRender3D() {
-  if (typeof window === "undefined") return false;
-  if (!window.matchMedia(WORK_DESKTOP).matches) return false;
+  let context;
   try {
-    const probe = document.createElement("canvas");
-    return !!(probe.getContext("webgl2") || probe.getContext("webgl"));
+    // Three r163+ requires WebGL2; WebGL1-only devices use the DOM deck.
+    context = document.createElement("canvas").getContext("webgl2");
+    return !!context;
   } catch {
     return false;
+  } finally {
+    context?.getExtension("WEBGL_lose_context")?.loseContext();
   }
 }
 
@@ -34,7 +39,22 @@ function canRender3D() {
  */
 export default function Work({ ready }) {
   const sectionRef = useRef(null);
-  const [use3D] = useState(canRender3D);
+  const [eligible, setEligible] = useState(false);
+  const [failed, setFailed] = useState(false);
+  const support = useRef(null);
+  const onFailure = useCallback(() => setFailed(true), []);
+  const use3D = eligible && !failed;
+
+  useEffect(() => {
+    const media = window.matchMedia(WORK_DESKTOP);
+    const update = () => {
+      if (media.matches && support.current === null) support.current = canRender3D();
+      setEligible(media.matches && support.current === true);
+    };
+    update();
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
+  }, []);
   const [nearby, setNearby] = useState(false);
   const { progress, target, active } = useWork(ready, sectionRef, use3D);
 
@@ -69,9 +89,11 @@ export default function Work({ ready }) {
         {use3D && (
           <div className="work__stage" aria-hidden="true">
             {nearby && (
-              <Suspense fallback={null}>
-                <Stage progress={progress} target={target} active={active} />
-              </Suspense>
+              <StageBoundary onFailure={onFailure}>
+                <Suspense fallback={null}>
+                  <Stage progress={progress} target={target} active={active && use3D} onFailure={onFailure} />
+                </Suspense>
+              </StageBoundary>
             )}
           </div>
         )}

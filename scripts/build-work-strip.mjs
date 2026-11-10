@@ -18,7 +18,7 @@ const PANEL_H = 784;
 // every panel keeps its site's headline — the thing that makes it readable
 // at a glance as it swings past.
 const panels = [
-  { src: null }, // Design Library uses a neutral panel, not the previous project screenshot.
+  { src: "src/assets/images/design-library.jpg", left: 398 },
   { src: "src/assets/images/o2fitness.jpg",   left: 250 },
   { src: "src/assets/images/powerlifter.jpg", left: 80 },
 ];

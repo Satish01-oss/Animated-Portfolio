@@ -1,3 +1,4 @@
+import designLibrary from "../assets/images/design-library.jpg";
 import o2fitness from "../assets/images/o2fitness.jpg";
 import powerlifter from "../assets/images/powerlifter.jpg";
 
@@ -12,8 +13,8 @@ export const projects = [
     tag: "Web · Design resources",
     title: "Design Library",
     name: "Design Library",
-    image: null,
-    alt: "",
+    image: designLibrary,
+    alt: "Design Library home page with the headline A premium website, live tonight.",
     repo: null,
     live: "https://skillstosalary.com/design-library",
     points: [

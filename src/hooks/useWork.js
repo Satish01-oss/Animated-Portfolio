@@ -36,6 +36,21 @@ const RADIUS = 20;         // visual corner radius, px
 const clamp01 = (v) => Math.min(1, Math.max(0, v));
 const span = ([a, b], v) => clamp01((v - a) / (b - a));
 
+// A single snapshot drives initial setup, refresh, and forward/reverse scrolling.
+export function workStateAt(v, has3D) {
+  return {
+    spin: span(V.SPIN, v),
+    unroll: has3D ? span(V.UNROLL, v) : 0,
+    hand: span(has3D ? V.HANDOFF : V.UNROLL, v),
+    landed: v > V.HANDOFF[1] + 0.05,
+    cards: v >= V.FLIP ? "fanned" : v >= V.SPLIT ? "split" : "joined",
+    copyIn: span(V.COPY_IN, v),
+    copyOut: span(V.COPY_OUT, v),
+    heading: span(V.HEADING, v),
+  };
+}
+
+
 /**
  * The work chapter: a WebGL ring of the three projects that unrolls into a
  * strip, lands on three DOM cards, and hands over to them; the cards then
@@ -146,13 +161,29 @@ export function useWork(enabled, sectionRef, has3D) {
           });
         };
 
-        const stateAt = (v) => (v >= V.FLIP ? "fanned" : v >= V.SPLIT ? "split" : "joined");
-
         gsap.set(cards, { transformOrigin: "50% 50%" });
         measure();
         go("joined", true);
 
-        let wasLanded = false;
+        // Force synchronization after media-query re-entry, even when React
+        // still holds the previous chapter's landed state.
+        let wasLanded = null;
+        const sync = (self, instant = false) => {
+          const snapshot = workStateAt(toVh(self), has3D);
+          progress.current.spin = snapshot.spin;
+          progress.current.unroll = snapshot.unroll;
+          const { copyIn, copyOut, hand, heading: hd, landed: isLanded } = snapshot;
+          if (marquee) gsap.set(marquee, { autoAlpha: 1 - copyOut });
+          gsap.set(copy, { autoAlpha: copyIn * (1 - copyOut), y: (1 - copyIn) * 30 - copyOut * 30 });
+          gsap.set(deck, { autoAlpha: hand });
+          if (stage) gsap.set(stage, { autoAlpha: 1 - hand });
+          gsap.set(heading, { autoAlpha: hd, y: (1 - hd) * 40 });
+          if (isLanded !== wasLanded) {
+            wasLanded = isLanded;
+            setLanded(isLanded);
+          }
+          go(snapshot.cards, instant);
+        };
         const st = ScrollTrigger.create({
           trigger: section,
           start: "top bottom",
@@ -160,36 +191,11 @@ export function useWork(enabled, sectionRef, has3D) {
           invalidateOnRefresh: true,
           onRefresh: (self) => {
             measure();
-            go(stateAt(toVh(self)), true);
+            sync(self, true);
           },
-          onUpdate: (self) => {
-            const v = toVh(self);
-
-            progress.current.spin = span(V.SPIN, v);
-            progress.current.unroll = has3D ? span(V.UNROLL, v) : 0;
-
-            const copyA = span(V.COPY_IN, v) * (1 - span(V.COPY_OUT, v));
-            if (marquee) gsap.set(marquee, { autoAlpha: 1 - span(V.COPY_OUT, v) });
-            gsap.set(copy, { autoAlpha: copyA, y: (1 - span(V.COPY_IN, v)) * 30 - span(V.COPY_OUT, v) * 30 });
-
-            // Without WebGL there is no ring to hand over from: the deck just
-            // fades up where the unroll would have been.
-            const hand = has3D ? span(V.HANDOFF, v) : span(V.UNROLL, v);
-            gsap.set(deck, { autoAlpha: hand });
-            if (stage) gsap.set(stage, { autoAlpha: 1 - hand });
-
-            const hd = span(V.HEADING, v);
-            gsap.set(heading, { autoAlpha: hd, y: (1 - hd) * 40 });
-
-            const isLanded = v > V.HANDOFF[1] + 0.05;
-            if (isLanded !== wasLanded) {
-              wasLanded = isLanded;
-              setLanded(isLanded);
-            }
-
-            go(stateAt(v));
-          },
+          onUpdate: (self) => sync(self),
         });
+        sync(st, true);
 
         function toVh(self) {
           return (self.progress * (self.end - self.start)) / window.innerHeight;
